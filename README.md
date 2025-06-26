@@ -56,17 +56,24 @@ Large Language Models (LLMs) are powerful, but in government and policy settings
 ## How to Use
 
 1. **Install dependencies** (see below).
-2. **Run the app:**
+2. **Add your OpenAI API key:**
+   - Create a file named `.env` in the project directory.
+   - Add the following line to the file (replace `sk-...` with your actual key):
+     ```
+     OPENAI_API_KEY=sk-...
+     ```
+   - This is required for the app to function, as all LLM requests use this key.
+3. **Run the app:**
    ```bash
    python main.py
    ```
-3. **Open the Gradio interface** (the URL will be shown in your terminal).
-4. **Enter a prompt** describing your county administration question or concern.
-5. **(Optional) Customize the Crew:**
+4. **Open the Gradio interface** (the URL will be shown in your terminal).
+5. **Enter a prompt** describing your county administration question or concern.
+6. **(Optional) Customize the Crew:**
    - Expand the "Customize Crew" section.
    - For each agent, select a persona from the dropdown, or create/edit personas using the provided fields.
    - Click "Save Persona" to add it to your library (all dropdowns update instantly).
-6. **Click "Run Crew"** to see the step-by-step outputs and the final, polished response.
+7. **Click "Run Crew"** to see the step-by-step outputs and the final, polished response.
 
 ## personas.json
 - This file is automatically created and updated as you add or edit personas.
@@ -77,6 +84,13 @@ Large Language Models (LLMs) are powerful, but in government and policy settings
 - crewai
 - gradio
 - dotenv
+
+**Sample setup for a new virtual environment:**
+```bash
+python -m venv .venv
+source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
+pip install -r requirements.txt
+```
 
 Install dependencies with:
 ```bash
