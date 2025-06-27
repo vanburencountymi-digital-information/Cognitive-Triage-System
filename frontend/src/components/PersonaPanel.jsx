@@ -126,7 +126,6 @@ const PersonaPanel = ({ selectedPersona, onPersonaSelect }) => {
   return (
     <div className="persona-panel">
       <div className="persona-panel-header">
-        <h3>Personas</h3>
         <button 
           className="btn btn-primary btn-sm"
           onClick={handleCreatePersona}
@@ -136,7 +135,7 @@ const PersonaPanel = ({ selectedPersona, onPersonaSelect }) => {
       </div>
 
       {error && (
-        <div className="alert alert-danger">
+        <div className="alert alert-danger alert-sm">
           {error}
         </div>
       )}
@@ -148,8 +147,8 @@ const PersonaPanel = ({ selectedPersona, onPersonaSelect }) => {
             className={`persona-item ${selectedPersona === persona.name ? 'selected' : ''}`}
           >
             <div className="persona-info">
-              <h4>{persona.name}</h4>
-              <p className="persona-role">{persona.agent.role}</p>
+              <h6 className="mb-1">{persona.name}</h6>
+              <p className="persona-role mb-2">{persona.agent.role}</p>
             </div>
             <div className="persona-actions">
               <button

@@ -1,10 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import './App.css';
 import GraphCanvas from './components/GraphCanvas';
-import PersonaPanel from './components/PersonaPanel';
 import RunButton from './components/RunButton';
 import ResultsDisplay from './components/ResultsDisplay';
-import SystemManager from './components/SystemManager';
+import TabPanel from './components/TabPanel';
 
 function App() {
   const [selectedPersona, setSelectedPersona] = useState('');
@@ -84,19 +83,15 @@ function App() {
           {/* Main Content Area */}
           <div className="main-content">
             <div className="row">
-              {/* Left Sidebar - Persona Panel */}
+              {/* Left Sidebar - Tab Panel */}
               <div className="col-md-3">
                 <div className="sidebar">
-                  <PersonaPanel
+                  <TabPanel
                     selectedPersona={selectedPersona}
                     onPersonaSelect={handlePersonaSelect}
+                    graphData={graphData}
+                    onLoadSystem={handleLoadSystem}
                   />
-                  <div className="mt-3">
-                    <SystemManager
-                      graphData={graphData}
-                      onLoadSystem={handleLoadSystem}
-                    />
-                  </div>
                 </div>
               </div>
 

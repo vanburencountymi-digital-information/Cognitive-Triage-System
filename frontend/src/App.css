@@ -59,9 +59,8 @@
   background: white;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  padding: 1.5rem;
   height: 600px;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 /* Graph section */
@@ -676,5 +675,102 @@
   .system-manager .btn-group-sm .btn {
     border-radius: 4px !important;
     margin-bottom: 0.25rem;
+  }
+}
+
+/* Tab Panel styles */
+.tab-panel {
+  height: 100%;
+}
+
+.tab-panel .card {
+  height: 100%;
+  border: none;
+  box-shadow: none;
+}
+
+.tab-panel .card-header {
+  background: transparent;
+  border-bottom: 1px solid #e9ecef;
+  padding: 0;
+}
+
+.tab-panel .nav-tabs {
+  border-bottom: none;
+}
+
+.tab-panel .nav-tabs .nav-link {
+  border: none;
+  border-radius: 0;
+  color: #6c757d;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.tab-panel .nav-tabs .nav-link:hover {
+  border: none;
+  color: #495057;
+  background-color: #f8f9fa;
+}
+
+.tab-panel .nav-tabs .nav-link.active {
+  border: none;
+  border-bottom: 2px solid #007bff;
+  color: #007bff;
+  background-color: transparent;
+}
+
+.tab-panel .card-body {
+  padding: 1rem 0;
+  height: calc(100% - 60px);
+  overflow-y: auto;
+}
+
+.tab-panel .tab-content {
+  height: 100%;
+}
+
+.tab-panel .tab-pane {
+  height: 100%;
+  display: none;
+}
+
+.tab-panel .tab-pane.active {
+  display: block;
+}
+
+/* Adjust persona panel styles for tab context */
+.tab-panel .persona-panel {
+  height: 100%;
+  padding: 0;
+}
+
+.tab-panel .persona-panel-header {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tab-panel .persona-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Adjust system manager styles for tab context */
+.tab-panel .system-manager {
+  height: 100%;
+  padding: 0;
+}
+
+/* Responsive adjustments for tabs */
+@media (max-width: 768px) {
+  .tab-panel .nav-tabs .nav-link {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  .tab-panel .card-body {
+    padding: 0.75rem 0;
   }
 }

@@ -128,103 +128,96 @@ const SystemManager = ({ graphData, onLoadSystem }) => {
 
   return (
     <div className="system-manager">
-      <div className="card">
-        <div className="card-header">
-          <h5 className="mb-0">💾 System Manager</h5>
+      {/* Save System Section */}
+      <div className="mb-4">
+        <h6>Save Current Workflow</h6>
+        <div className="form-group mb-2">
+          <label className="form-label small">System Name</label>
+          <input
+            type="text"
+            className="form-control form-control-sm"
+            value={systemName}
+            onChange={(e) => setSystemName(e.target.value)}
+            placeholder="Enter system name..."
+          />
         </div>
-        <div className="card-body">
-          {/* Save System Section */}
-          <div className="mb-4">
-            <h6>Save Current Workflow</h6>
-            <div className="form-group mb-2">
-              <label className="form-label small">System Name</label>
-              <input
-                type="text"
-                className="form-control form-control-sm"
-                value={systemName}
-                onChange={(e) => setSystemName(e.target.value)}
-                placeholder="Enter system name..."
-              />
-            </div>
-            <div className="form-group mb-3">
-              <label className="form-label small">Description (optional)</label>
-              <textarea
-                className="form-control form-control-sm"
-                rows="2"
-                value={systemDescription}
-                onChange={(e) => setSystemDescription(e.target.value)}
-                placeholder="Describe this workflow..."
-              />
-            </div>
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={handleSaveSystem}
-              disabled={isSaving || !systemName.trim()}
-            >
-              {isSaving ? 'Saving...' : 'Save System'}
-            </button>
+        <div className="form-group mb-3">
+          <label className="form-label small">Description (optional)</label>
+          <textarea
+            className="form-control form-control-sm"
+            rows="2"
+            value={systemDescription}
+            onChange={(e) => setSystemDescription(e.target.value)}
+            placeholder="Describe this workflow..."
+          />
+        </div>
+        <button
+          className="btn btn-primary btn-sm"
+          onClick={handleSaveSystem}
+          disabled={isSaving || !systemName.trim()}
+        >
+          {isSaving ? 'Saving...' : 'Save System'}
+        </button>
+      </div>
+
+      {/* Load System Section */}
+      <div className="mb-4">
+        <h6>Load Saved System</h6>
+        <div className="form-group mb-2">
+          <label className="form-label small">Select System</label>
+          <select
+            className="form-select form-select-sm"
+            value={selectedSystem}
+            onChange={(e) => handleSystemSelect(e.target.value)}
+          >
+            <option value="">Choose a system...</option>
+            {systems.map((system) => (
+              <option key={system.name} value={system.name}>
+                {system.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        {selectedSystem && (
+          <div className="mb-3">
+            <small className="text-muted">
+              {systems.find(s => s.name === selectedSystem)?.description || 'No description'}
+            </small>
           </div>
-
-          {/* Load System Section */}
-          <div className="mb-4">
-            <h6>Load Saved System</h6>
-            <div className="form-group mb-2">
-              <label className="form-label small">Select System</label>
-              <select
-                className="form-select form-select-sm"
-                value={selectedSystem}
-                onChange={(e) => handleSystemSelect(e.target.value)}
-              >
-                <option value="">Choose a system...</option>
-                {systems.map((system) => (
-                  <option key={system.name} value={system.name}>
-                    {system.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {selectedSystem && (
-              <div className="mb-3">
-                <small className="text-muted">
-                  {systems.find(s => s.name === selectedSystem)?.description || 'No description'}
-                </small>
-              </div>
-            )}
-            <div className="btn-group btn-group-sm">
-              <button
-                className="btn btn-outline-primary"
-                onClick={handleLoadSystem}
-                disabled={isLoading || !selectedSystem}
-              >
-                {isLoading ? 'Loading...' : 'Load'}
-              </button>
-              <button
-                className="btn btn-outline-danger"
-                onClick={handleDeleteSystem}
-                disabled={!selectedSystem}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-
-          {/* Message Display */}
-          {message && (
-            <div className={`alert alert-${message.includes('Error') ? 'danger' : 'success'} alert-sm`}>
-              {message}
-            </div>
-          )}
-
-          {/* System Stats */}
-          {systems.length > 0 && (
-            <div className="mt-3">
-              <small className="text-muted">
-                {systems.length} saved system{systems.length !== 1 ? 's' : ''}
-              </small>
-            </div>
-          )}
+        )}
+        <div className="btn-group btn-group-sm">
+          <button
+            className="btn btn-outline-primary"
+            onClick={handleLoadSystem}
+            disabled={isLoading || !selectedSystem}
+          >
+            {isLoading ? 'Loading...' : 'Load'}
+          </button>
+          <button
+            className="btn btn-outline-danger"
+            onClick={handleDeleteSystem}
+            disabled={!selectedSystem}
+          >
+            Delete
+          </button>
         </div>
       </div>
+
+      {/* Message Display */}
+      {message && (
+        <div className={`alert alert-${message.includes('Error') ? 'danger' : 'success'} alert-sm`}>
+          {message}
+        </div>
+      )}
+
+      {/* System Stats */}
+      {systems.length > 0 && (
+        <div className="mt-3">
+          <small className="text-muted">
+            {systems.length} saved system{systems.length !== 1 ? 's' : ''}
+          </small>
+        </div>
+      )}
     </div>
   );
 };
