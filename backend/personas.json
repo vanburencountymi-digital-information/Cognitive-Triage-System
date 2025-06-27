@@ -94,5 +94,17 @@
             "description": "You are reviewing a report written by the Civic Information Specialist in response to a strategic question from a county administrator.\nRather than providing editing suggestions or public feedback, your job is to **critically analyze the content** as if preparing an internal briefing for the administrator.\n\nSpecifically, examine the report for:\n\n- **Unstated assumptions**: What is being taken for granted?\n- **Missing counterarguments**: What perspectives are absent or underrepresented?\n- **Weak logic or reasoning**: Are any claims poorly supported or overly optimistic?\n- **Framing choices**: How might the tone or structure influence interpretation?\n\nWrite your output as a clear, analytical response intended **only for the administrator\u2019s eyes**, to help them assess the report more deeply. Do not summarize or rewrite the report \u2014 analyze it.",
             "expected_output": "An internal critical analysis of the report, helping the administrator assess its strengths and weaknesses"
         }
+    },
+    {
+        "name": "Test Persona",
+        "agent": {
+            "role": "Test Role",
+            "goal": "Test goal for demonstration",
+            "backstory": "This is a test persona for API testing"
+        },
+        "task": {
+            "description": "This is a test task description with {user_prompt}",
+            "expected_output": "A test output"
+        }
     }
 ]

@@ -10,7 +10,7 @@ from crewai import Agent, Task, Crew, Process
 load_dotenv()
 
 # Setup logging
-log_file = "crew_run.log"
+log_file = "backend/crew_run.log"
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -24,7 +24,7 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
 # Configuration
-PERSONAS_FILE = "personas.json"
+PERSONAS_FILE = "backend/personas.json"
 
 def log_section(title: str):
     logging.info("\n" + "#" * 60)
@@ -120,6 +120,10 @@ def execute_crew_graph(graph_data, user_prompt):
         tasks[node_id] = task
         node_map[node_id] = node
     
+    # Validate that we have at least one task
+    if not tasks:
+        raise ValueError("No valid personas found for any nodes in the graph. Please ensure the persona names match those in personas.json")
+    
     # Second pass: set up task dependencies based on edges
     for edge in edges:
         source_id = edge.get('source')
@@ -145,6 +149,12 @@ def execute_crew_graph(graph_data, user_prompt):
     all_agents = [task.agent for task in tasks.values()]
     all_tasks = list(tasks.values())
     
+    # Additional validation
+    if not all_agents:
+        raise ValueError("No agents could be created from the provided personas")
+    if not all_tasks:
+        raise ValueError("No tasks could be created from the provided personas")
+    
     crew = Crew(
         agents=all_agents,
         tasks=all_tasks,
@@ -153,6 +163,12 @@ def execute_crew_graph(graph_data, user_prompt):
     )
     
     final_output = crew.kickoff()
+    
+    # Extract raw output from CrewOutput object
+    if hasattr(final_output, 'raw'):
+        final_output_text = final_output.raw
+    else:
+        final_output_text = str(final_output)
     
     # Collect step outputs
     steps_output = {}
@@ -167,10 +183,10 @@ def execute_crew_graph(graph_data, user_prompt):
         }
     
     log_section("Final Result")
-    logging.info(final_output)
+    logging.info(final_output_text)
     
     return {
-        "final": final_output,
+        "final": final_output_text,
         "steps": steps_output
     }
 
