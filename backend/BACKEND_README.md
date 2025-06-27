@@ -2,6 +2,13 @@
 
 This Flask backend provides a REST API for the Cognitive Triage System, separating the CrewAI logic from the frontend interface.
 
+## Overview
+
+The backend manages:
+- **Personas**: AI agent definitions with roles, goals, and tasks
+- **Crew Execution**: Dynamic creation and execution of AI agent workflows
+- **Graph-based Workflows**: Flexible agent collaboration patterns
+
 ## Setup
 
 1. Install dependencies:
@@ -9,24 +16,42 @@ This Flask backend provides a REST API for the Cognitive Triage System, separati
 pip install -r requirements.txt
 ```
 
-2. Run the Flask server:
+2. Set up environment variables (create `.env` file):
 ```bash
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+3. Run the Flask server:
+```bash
+# From backend directory
 python app.py
+
+# Or from project root
+python backend/app.py
 ```
 
 The server will start on `http://localhost:5000`
+
+## CORS Configuration
+
+The backend has CORS enabled for all origins, making it ready for frontend integration:
+```python
+CORS(app)  # Enable CORS for all routes
+```
 
 ## API Endpoints
 
 ### Health Check
 - **GET** `/health`
 - Returns server status
+- Response: `{"status": "healthy", "service": "Cognitive Triage System API"}`
 
 ### Personas Management
 
 #### Get All Personas
 - **GET** `/api/personas`
 - Returns: Array of persona definitions
+- Use this to populate persona selection dropdowns in the frontend
 
 #### Create Persona
 - **POST** `/api/personas`
@@ -101,11 +126,25 @@ The graph defines how agents work together:
 - **Edges**: Define dependencies between tasks (source → target)
 - **Execution**: Tasks are executed sequentially based on dependencies
 
+### Frontend Integration Tips
+
+When building the frontend, consider:
+
+1. **Persona Selection**: Use `/api/personas` to populate dropdowns for graph node configuration
+2. **Real-time Updates**: The crew execution can take time - implement loading states
+3. **Error Handling**: Handle 400/500 errors gracefully with user-friendly messages
+4. **Graph Validation**: Ensure all referenced personas exist before sending requests
+
 ## Testing
 
 Run the test script to verify the API:
 ```bash
 python test_backend.py
+```
+
+For simple testing:
+```bash
+python simple_test.py
 ```
 
 ## Example Usage
@@ -137,15 +176,64 @@ This creates the same workflow as the original Gradio interface:
 3. Analyst critiques the response
 4. Rewriter creates final polished version
 
+### Strategic Analysis System
+```json
+{
+  "graph": {
+    "nodes": [
+      {"id": "framer", "persona": "Problem Framer"},
+      {"id": "advisor", "persona": "Policy and Technology Advisor"},
+      {"id": "analyst", "persona": "Public Communication Analyst"},
+      {"id": "critic", "persona": "Critical Report Analyst"}
+    ],
+    "edges": [
+      {"source": "framer", "target": "advisor"},
+      {"source": "advisor", "target": "analyst"},
+      {"source": "advisor", "target": "critic"}
+    ]
+  },
+  "user_prompt": "Should our county implement AI-powered surveillance cameras in public spaces?"
+}
+```
+
 ## Error Handling
 
 The API returns appropriate HTTP status codes:
 - `200`: Success
-- `400`: Bad Request (missing data, invalid format)
+- `400`: Bad Request (missing data, invalid format, no valid personas found)
 - `404`: Not Found (persona not found)
 - `409`: Conflict (persona already exists)
 - `500`: Internal Server Error
 
+Common error scenarios:
+- **No valid personas found**: Ensure persona names match exactly (case-sensitive)
+- **Missing graph data**: Provide both `graph` and `user_prompt` in request body
+- **Invalid edges**: Ensure source and target node IDs exist in the graph
+
 ## Logging
 
-All crew executions are logged to `crew_run.log` with detailed information about each step. 
+All crew executions are logged to `crew_run.log` with detailed information about each step.
+
+## Frontend Development
+
+For frontend developers:
+
+1. **Start with the health check** to verify backend connectivity
+2. **Load available personas** using GET `/api/personas` for UI components
+3. **Implement graph building** - allow users to create nodes and edges
+4. **Handle async execution** - crew runs can take 30-60 seconds
+5. **Display step-by-step results** - show both final output and individual step outputs
+
+## File Structure
+
+```
+backend/
+├── app.py              # Main Flask application
+├── requirements.txt    # Python dependencies
+├── personas.json       # Persona definitions
+├── test_backend.py     # Full API test suite
+├── simple_test.py      # Basic functionality test
+├── api_examples.md     # Curl/PowerShell examples
+├── crew_run.log        # Execution logs
+└── BACKEND_README.md   # This file
+``` 
