@@ -1,3 +1,0 @@
-crewai>=0.20.6
-python-dotenv>=1.0.0
-gradio>=4.16.0 

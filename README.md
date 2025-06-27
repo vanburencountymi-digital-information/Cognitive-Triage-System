@@ -1,102 +1,213 @@
-# Cognitive-Triage-System
+# 🧠 Cognitive Triage System
 
-This project is a proof of concept for a next-generation, agentic LLM system designed to support county administrators and decision makers. It provides nuanced, transparent, and bias-resistant responses to complex public sector questions, using a multi-agent workflow and a flexible persona system. The system is built with [crewAI](https://github.com/joaomdmoura/crewAI) and features a modern, interactive Gradio interface for both end-users and system designers.
+A sophisticated AI agent workflow builder that allows you to create, save, and manage complex AI agent systems with drag-and-drop simplicity. Built with React frontend and Flask backend, powered by CrewAI.
 
-## Why This System?
+## ✨ Features
 
-Large Language Models (LLMs) are powerful, but in government and policy settings, they are prone to amplifying confirmation bias, engagement bias, and context bias—especially when prompts are emotionally charged, ambiguous, or loaded. This system is designed to help county staff and administrators avoid these pitfalls by:
-- Reframing questions to be clear and neutral
-- Providing balanced, context-aware analysis
-- Critiquing outputs for tone, completeness, and bias
-- Delivering a transparent, step-by-step record of the reasoning process
+- **Visual Workflow Builder**: Drag-and-drop interface for creating AI agent workflows
+- **System Management**: Save, load, and manage complete workflow configurations
+- **Persona Management**: Create, edit, and manage AI agent personas
+- **Real-time Execution**: Run workflows and see results immediately
+- **Special Nodes**: Built-in nodes like "User Prompt" for enhanced workflows
+- **Example Systems**: Pre-built workflow templates to get started quickly
 
-## Features
+## 🚀 Quick Start
 
-- **Multi-Agent, Multi-Step Workflow:**
-  - Each user prompt is processed by a sequence of specialized agents, each with a distinct role:
-    1. **Prompt Reframer:** Neutralizes bias and clarifies the administrator's question.
-    2. **Information Specialist:** Provides a thorough, plain-language response, drawing on policy, technical, and contextual knowledge.
-    3. **Communication Analyst:** Critiques the response, surfacing strengths, weaknesses, missing perspectives, and potential issues with tone or clarity—without rewriting.
-    4. **Final Editor:** Integrates the critique and the original response, producing a polished, user-ready message that addresses all identified issues.
-
-- **Persona System:**
-  - Each agent's configuration (role, goal, backstory, task description, expected output) is called a "persona."
-  - Personas are saved to and loaded from a `personas.json` file, allowing persistent, reusable agent/task definitions.
-  - The Gradio UI allows you to select, edit, and create new personas for each agent step, with instant updates to all dropdowns.
-  - Custom personas can be created for specialized workflows (e.g., strategic problem framing, critical report analysis, policy advising).
-
-- **Transparent, Auditable Process:**
-  - The interface displays the output of each step: the reframed prompt, the initial response, the analyst's critique, and the final edited message.
-  - All agent configurations and outputs are visible and editable, supporting transparency and accountability in decision making.
-
-- **Designed for Public Sector Needs:**
-  - Helps county staff and administrators avoid common LLM failure modes.
-  - Supports nuanced, fair, and trustworthy decision making in complex, high-stakes environments.
-
-## How the Process Works
-
-1. **Prompt Reframer:**
-   - The initial question or concern from the administrator is reframed into a clear, neutral, and actionable prompt. This step helps surface and neutralize any implicit bias or emotional charge, ensuring the subsequent analysis is grounded and constructive.
-
-2. **Information Specialist:**
-   - This agent provides a thorough, plain-language response to the reframed prompt, drawing on policy, technical, and contextual knowledge. The response aims to be balanced and accessible, helping the administrator understand the issue from multiple angles.
-
-3. **Communication Analyst:**
-   - Rather than rewriting, this agent critiques the specialist's response. The critique highlights strengths, weaknesses, missing perspectives, and potential issues with tone, clarity, or completeness. This step is crucial for surfacing engagement and context biases, and for ensuring the response is robust before it is used in decision making or public communication.
-
-4. **Final Editor:**
-   - The final agent integrates the critique and the original response, producing a polished, user-ready message that addresses all identified issues. This ensures the final output is not only accurate and clear, but also contextually aware and free from common LLM pitfalls.
-
-**Custom Personas:**
-- The system supports custom personas for each agent role. For example, you might use a "Problem Framer" persona to break down a strategic question into sub-questions, a "Policy and Technology Advisor" to provide balanced analysis, or a "Critical Report Analyst" to surface assumptions and blind spots in a report. These personas can be tailored to the specific needs and values of your county or department, and are easily managed through the Gradio interface.
-
-**Result:**
-- The administrator receives a transparent, step-by-step record of how their question was reframed, answered, critiqued, and finalized. This process helps avoid the most common LLM failure modes in government settings, supporting more nuanced, fair, and trustworthy decision making.
-
-## How to Use
-
-1. **Install dependencies** (see below).
-2. **Add your OpenAI API key:**
-   - Create a file named `.env` in the project directory.
-   - Add the following line to the file (replace `sk-...` with your actual key):
-     ```
-     OPENAI_API_KEY=sk-...
-     ```
-   - This is required for the app to function, as all LLM requests use this key.
-3. **Run the app:**
-   ```bash
-   python main.py
-   ```
-4. **Open the Gradio interface** (the URL will be shown in your terminal).
-5. **Enter a prompt** describing your county administration question or concern.
-6. **(Optional) Customize the Crew:**
-   - Expand the "Customize Crew" section.
-   - For each agent, select a persona from the dropdown, or create/edit personas using the provided fields.
-   - Click "Save Persona" to add it to your library (all dropdowns update instantly).
-7. **Click "Run Crew"** to see the step-by-step outputs and the final, polished response.
-
-## personas.json
-- This file is automatically created and updated as you add or edit personas.
-- Each persona contains all the information needed to configure an agent and its task.
-
-## Requirements
+### Prerequisites
 - Python 3.8+
-- crewai
-- gradio
-- dotenv
+- Node.js 14+
+- npm or yarn
 
-**Sample setup for a new virtual environment:**
-```bash
-python -m venv .venv
-source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
-pip install -r requirements.txt
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd Cognitive-Triage-System
+   ```
+
+2. **Set up the backend**
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   python app.py
+   ```
+
+3. **Set up the frontend**
+   ```bash
+   cd frontend
+   npm install
+   npm start
+   ```
+
+4. **Load example systems** (optional)
+   ```bash
+   cd backend
+   python load_examples.py
+   ```
+
+5. **Open your browser**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:5000
+
+## 📖 Usage Guide
+
+### 1. System Management
+
+The System Manager (left sidebar) allows you to save and load complete workflow configurations:
+
+#### Saving Systems
+1. Build your workflow using the graph canvas
+2. Open the System Manager (left sidebar)
+3. Enter a name and optional description
+4. Click "Save System"
+
+#### Loading Systems
+1. Open the System Manager
+2. Select a system from the dropdown
+3. Click "Load" to restore the workflow
+4. Use "Delete" to remove unwanted systems
+
+#### Example Systems
+The backend includes pre-built example systems:
+- **Basic Customer Service**: Simple 2-agent workflow
+- **Full Quality Assurance**: Complete 4-agent workflow with all steps
+- **Direct Response**: Single agent for quick responses
+
+### 2. Building Workflows
+
+1. **Select a Persona**: Choose from the left panel or create a new one
+2. **Add Nodes**: Click "Add Node" to place agents in your workflow
+3. **Connect Nodes**: Drag from one node's bottom handle to another's top handle
+4. **Save Workflow**: Use the System Manager to save your configuration
+5. **Enter Prompt**: Type your question or request in the prompt field
+6. **Run Workflow**: Click "Run Crew Workflow" to execute your AI agents
+7. **View Results**: See the final output and individual step results on the right
+
+### 3. Special Nodes
+
+The system automatically provides special nodes:
+- **Prompt Node**: Represents user input that can be passed to any agent
+- **Visual Distinction**: Green gradient background with icons
+- **System Protection**: Cannot be deleted or moved
+- **Connection Source**: Can connect to agent nodes to define workflow inputs
+
+## 🏗️ Architecture
+
+### Backend (Flask)
+- **API Endpoints**: RESTful API for system management, persona management, and workflow execution
+- **CrewAI Integration**: Powers the AI agent workflows
+- **Data Persistence**: JSON-based storage for systems and personas
+- **Special Nodes**: Built-in support for system nodes like "prompt"
+
+### Frontend (React)
+- **GraphCanvas**: Main workflow builder with drag-and-drop functionality
+- **SystemManager**: Save, load, and manage workflow systems
+- **PersonaPanel**: Manage AI agent personas and configurations
+- **RunButton**: Execute workflows and handle results
+- **ResultsDisplay**: Show workflow execution results and intermediate outputs
+
+## 📁 Project Structure
+
+```
+Cognitive-Triage-System/
+├── backend/
+│   ├── app.py                 # Flask backend server
+│   ├── personas.json          # Stored personas
+│   ├── systems.json           # Stored systems
+│   ├── example_systems.json   # Pre-built example systems
+│   ├── load_examples.py       # Script to load examples
+│   └── requirements.txt       # Python dependencies
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── GraphCanvas.jsx      # Main workflow builder
+│   │   │   ├── SystemManager.jsx    # System save/load interface
+│   │   │   ├── PersonaPanel.jsx     # Persona management
+│   │   │   ├── RunButton.jsx        # Workflow execution
+│   │   │   └── ResultsDisplay.jsx   # Results viewer
+│   │   ├── api.js                   # API service layer
+│   │   └── App.jsx                  # Main application
+│   └── package.json                 # Node.js dependencies
+└── README.md                        # This file
 ```
 
-Install dependencies with:
+## 🔧 API Reference
+
+### System Management
+- `GET /api/systems` - List all saved systems
+- `POST /api/systems` - Save a new system
+- `GET /api/systems/<name>` - Get a specific system
+- `PUT /api/systems/<name>` - Update an existing system
+- `DELETE /api/systems/<name>` - Delete a system
+
+### Persona Management
+- `GET /api/personas` - List all personas
+- `POST /api/personas` - Create a new persona
+- `PUT /api/personas/<name>` - Update a persona
+- `DELETE /api/personas/<name>` - Delete a persona
+
+### Workflow Execution
+- `POST /api/run-crew-graph` - Execute a workflow with graph data and user prompt
+
+### Special Nodes
+- `GET /api/special-nodes` - Get information about special nodes
+
+## 🧪 Testing
+
+### Backend Tests
 ```bash
-pip install -r requirements.txt
+cd backend
+python test_systems.py          # Test system management
+python test_graph_loading.py    # Test graph loading functionality
 ```
 
----
+### Frontend Tests
+```bash
+cd frontend
+npm test                        # Run React tests
+```
 
-This project demonstrates how agentic LLM systems can be made more robust, transparent, and user-configurable for real-world public sector applications.
+## 🚀 Deployment
+
+### Backend Deployment
+1. Set up a Python environment
+2. Install dependencies: `pip install -r requirements.txt`
+3. Configure environment variables
+4. Run: `python app.py`
+
+### Frontend Deployment
+1. Build for production: `npm run build`
+2. Serve the `build` directory with your web server
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🆘 Troubleshooting
+
+### Common Issues
+
+1. **Backend Connection Error**: Ensure the Flask backend is running on port 5000
+2. **CORS Issues**: The backend should have CORS enabled for localhost:3000
+3. **Node Dependencies**: Run `npm install` if you encounter module not found errors
+4. **Special Nodes Not Loading**: Check backend `/api/special-nodes` endpoint
+5. **System Loading Issues**: Verify the backend is running and systems.json exists
+
+### Debug Mode
+Enable React Developer Tools in your browser for component inspection and debugging.
+
+## 📞 Support
+
+For issues and questions:
+1. Check the troubleshooting section above
+2. Review the API documentation
+3. Open an issue on GitHub
