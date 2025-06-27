@@ -46,6 +46,25 @@ CORS(app)  # Enable CORS for all routes
 - Returns server status
 - Response: `{"status": "healthy", "service": "Cognitive Triage System API"}`
 
+### Special Nodes
+- **GET** `/api/special-nodes`
+- Returns information about special nodes that are always available
+- Use this to populate the frontend with system nodes like "prompt"
+- Response: Array of special node definitions
+
+Example response:
+```json
+[
+  {
+    "id": "prompt",
+    "name": "User Prompt", 
+    "description": "The original user input that can be passed to any agent",
+    "type": "prompt",
+    "role": "Input Source"
+  }
+]
+```
+
 ### Personas Management
 
 #### Get All Personas
@@ -126,14 +145,52 @@ The graph defines how agents work together:
 - **Edges**: Define dependencies between tasks (source → target)
 - **Execution**: Tasks are executed sequentially based on dependencies
 
+### Special Prompt Node
+
+The system automatically includes a special "prompt" node that represents the user's original input. This allows you to:
+
+- **Pass the original prompt** to any agent that needs it
+- **Combine prompt context** with outputs from other agents
+- **Maintain the original user intent** throughout the workflow
+
+#### Using the Prompt Node
+
+To give an agent access to the original user prompt, create an edge from "prompt" to that agent:
+
+```json
+{
+  "source": "prompt",
+  "target": "agent_id"
+}
+```
+
+#### Multiple Context Sources
+
+An agent can receive context from multiple sources:
+- **Original prompt**: Edge from "prompt" 
+- **Other agents**: Edges from other agent nodes
+- **Combined context**: Both prompt and agent outputs
+
+Example: A final editor that gets both the original prompt and a critique:
+```json
+{
+  "edges": [
+    {"source": "prompt", "target": "final_editor"},
+    {"source": "critic", "target": "final_editor"}
+  ]
+}
+```
+
 ### Frontend Integration Tips
 
 When building the frontend, consider:
 
 1. **Persona Selection**: Use `/api/personas` to populate dropdowns for graph node configuration
-2. **Real-time Updates**: The crew execution can take time - implement loading states
-3. **Error Handling**: Handle 400/500 errors gracefully with user-friendly messages
-4. **Graph Validation**: Ensure all referenced personas exist before sending requests
+2. **Prompt Node**: Always include the "prompt" node in your graph UI (it's automatically available)
+3. **Edge Creation**: Allow users to draw edges from "prompt" to any agent that needs the original context
+4. **Real-time Updates**: The crew execution can take time - implement loading states
+5. **Error Handling**: Handle 400/500 errors gracefully with user-friendly messages
+6. **Graph Validation**: Ensure all referenced personas exist before sending requests
 
 ## Testing
 
@@ -149,7 +206,7 @@ python simple_test.py
 
 ## Example Usage
 
-### Simple 4-Node Graph (Original System)
+### Simple 4-Node Graph (Original System) - Updated with Prompt Context
 ```json
 {
   "graph": {
@@ -162,7 +219,7 @@ python simple_test.py
     "edges": [
       {"source": "engineer", "target": "oracle"},
       {"source": "oracle", "target": "analyst"},
-      {"source": "oracle", "target": "rewriter"},
+      {"source": "prompt", "target": "rewriter"},
       {"source": "analyst", "target": "rewriter"}
     ]
   },
@@ -170,13 +227,30 @@ python simple_test.py
 }
 ```
 
-This creates the same workflow as the original Gradio interface:
+This creates an improved workflow where:
 1. Engineer reframes the prompt
-2. Oracle generates initial response
+2. Oracle generates initial response  
 3. Analyst critiques the response
-4. Rewriter creates final polished version
+4. **Rewriter creates final polished version** with both the original prompt context AND the critique
 
-### Strategic Analysis System
+### Direct Prompt Access
+```json
+{
+  "graph": {
+    "nodes": [
+      {"id": "oracle", "persona": "Default Civic Information Specialist"}
+    ],
+    "edges": [
+      {"source": "prompt", "target": "oracle"}
+    ]
+  },
+  "user_prompt": "What are the benefits of renewable energy?"
+}
+```
+
+This gives the oracle direct access to the user's original prompt without any preprocessing.
+
+### Strategic Analysis System - Updated
 ```json
 {
   "graph": {
@@ -187,9 +261,11 @@ This creates the same workflow as the original Gradio interface:
       {"id": "critic", "persona": "Critical Report Analyst"}
     ],
     "edges": [
+      {"source": "prompt", "target": "framer"},
       {"source": "framer", "target": "advisor"},
       {"source": "advisor", "target": "analyst"},
-      {"source": "advisor", "target": "critic"}
+      {"source": "advisor", "target": "critic"},
+      {"source": "prompt", "target": "critic"}
     ]
   },
   "user_prompt": "Should our county implement AI-powered surveillance cameras in public spaces?"

@@ -133,6 +133,25 @@
   box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
 }
 
+/* Special node styles */
+.special-node {
+  border-radius: 12px;
+  padding: 1rem;
+  min-width: 180px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.special-node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+}
+
+.special-node.selected {
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+}
+
 .node-content {
   text-align: center;
 }

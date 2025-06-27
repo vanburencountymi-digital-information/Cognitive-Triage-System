@@ -63,7 +63,32 @@ def create_agent_from_persona(persona):
         allow_delegation=False
     )
 
-def create_task_from_persona(persona, context_tasks=None, user_prompt=None):
+def create_prompt_task(user_prompt):
+    """Create a special task that represents the user's prompt"""
+    from crewai import Agent, Task
+    
+    # Create a simple agent for the prompt task
+    prompt_agent = Agent(
+        role="Prompt Provider",
+        goal="Provide the user's original prompt as context",
+        backstory="You are a simple agent that provides the user's original input.",
+        verbose=True,
+        allow_delegation=False
+    )
+    
+    # Create a task that just returns the user prompt
+    prompt_task = Task(
+        description="Return the user's original prompt exactly as provided.",
+        agent=prompt_agent,
+        expected_output="The user's original prompt text."
+    )
+    
+    # Set the output directly since this task doesn't need to run
+    prompt_task.output = type('obj', (object,), {'raw': user_prompt})()
+    
+    return prompt_task
+
+def create_task_from_persona(persona, context_tasks=None, user_prompt=None, prompt_context=None):
     """Create a CrewAI Task from a persona definition"""
     task_data = persona['task']
     description = task_data['description']
@@ -71,6 +96,10 @@ def create_task_from_persona(persona, context_tasks=None, user_prompt=None):
     # Replace placeholder if user_prompt is provided
     if user_prompt and '{user_prompt}' in description:
         description = description.format(user_prompt=user_prompt)
+    
+    # If we have prompt context, modify the description to include it
+    if prompt_context:
+        description = f"Original user prompt: {prompt_context}\n\n{description}"
     
     return Task(
         description=description,
@@ -102,6 +131,11 @@ def execute_crew_graph(graph_data, user_prompt):
     node_map = {}
     tasks = {}
     
+    # Create the special Prompt task
+    prompt_task = create_prompt_task(user_prompt)
+    tasks['prompt'] = prompt_task
+    node_map['prompt'] = {'id': 'prompt', 'persona': 'Prompt', 'role': 'Prompt Provider'}
+    
     # First pass: create all agents and tasks
     for node in nodes:
         node_id = node.get('id')
@@ -120,8 +154,8 @@ def execute_crew_graph(graph_data, user_prompt):
         tasks[node_id] = task
         node_map[node_id] = node
     
-    # Validate that we have at least one task
-    if not tasks:
+    # Validate that we have at least one task (excluding prompt)
+    if len(tasks) <= 1:  # Only prompt task exists
         raise ValueError("No valid personas found for any nodes in the graph. Please ensure the persona names match those in personas.json")
     
     # Second pass: set up task dependencies based on edges
@@ -135,19 +169,45 @@ def execute_crew_graph(graph_data, user_prompt):
                 tasks[target_id].context = []
             tasks[target_id].context.append(tasks[source_id])
     
-    # Find tasks with no dependencies (entry points)
+    # Third pass: handle prompt context for tasks that need it
+    # Find tasks that have edges from 'prompt' and add prompt context
+    for edge in edges:
+        source_id = edge.get('source')
+        target_id = edge.get('target')
+        
+        if source_id == 'prompt' and target_id in tasks:
+            # This task needs the original prompt context
+            # Recreate the task with prompt context
+            persona_name = node_map[target_id].get('persona')
+            persona = find_persona_by_name(persona_name)
+            if persona:
+                # Get existing context (excluding prompt task)
+                existing_context = []
+                if tasks[target_id].context:
+                    existing_context = [ctx for ctx in tasks[target_id].context if ctx != prompt_task]
+                
+                # Recreate task with prompt context
+                new_task = create_task_from_persona(
+                    persona, 
+                    context_tasks=existing_context,
+                    user_prompt=user_prompt,
+                    prompt_context=user_prompt
+                )
+                tasks[target_id] = new_task
+    
+    # Find tasks with no dependencies (entry points) - exclude prompt task
     entry_tasks = []
     for node_id, task in tasks.items():
-        if not task.context:
+        if node_id != 'prompt' and (not task.context or all(ctx == prompt_task for ctx in task.context)):
             entry_tasks.append(task)
     
     if not entry_tasks:
-        # If no entry points found, use all tasks
-        entry_tasks = list(tasks.values())
+        # If no entry points found, use all tasks except prompt
+        entry_tasks = [task for node_id, task in tasks.items() if node_id != 'prompt']
     
-    # Create and run the crew
-    all_agents = [task.agent for task in tasks.values()]
-    all_tasks = list(tasks.values())
+    # Create and run the crew (exclude prompt task from execution)
+    all_agents = [task.agent for node_id, task in tasks.items() if node_id != 'prompt']
+    all_tasks = [task for node_id, task in tasks.items() if node_id != 'prompt']
     
     # Additional validation
     if not all_agents:
@@ -294,6 +354,20 @@ def run_crew_graph():
 def health_check():
     """Health check endpoint"""
     return jsonify({"status": "healthy", "service": "Cognitive Triage System API"})
+
+@app.route('/api/special-nodes', methods=['GET'])
+def get_special_nodes():
+    """Get information about special nodes that are always available"""
+    special_nodes = [
+        {
+            "id": "prompt",
+            "name": "User Prompt",
+            "description": "The original user input that can be passed to any agent",
+            "type": "prompt",
+            "role": "Input Source"
+        }
+    ]
+    return jsonify(special_nodes)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000) 

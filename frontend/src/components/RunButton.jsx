@@ -14,10 +14,16 @@ const RunButton = ({ graphData, userPrompt, onResults }) => {
       return 'Please add at least one node to the graph';
     }
 
-    // Check if all nodes have personas
-    const nodesWithoutPersonas = graphData.nodes.filter(node => !node.persona || node.persona.trim() === '');
+    // Check if all agent nodes (non-special nodes) have personas
+    const agentNodes = graphData.nodes.filter(node => !node.type || node.type === 'custom');
+    const nodesWithoutPersonas = agentNodes.filter(node => !node.persona || node.persona.trim() === '');
     if (nodesWithoutPersonas.length > 0) {
-      return 'All nodes must have personas assigned';
+      return 'All agent nodes must have personas assigned';
+    }
+
+    // Check if there's at least one agent node
+    if (agentNodes.length === 0) {
+      return 'Please add at least one agent node to the graph';
     }
 
     return null;

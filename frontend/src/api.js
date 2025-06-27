@@ -37,6 +37,12 @@ export const apiService = {
     return response.data;
   },
 
+  // Special nodes
+  getSpecialNodes: async () => {
+    const response = await api.get('/api/special-nodes');
+    return response.data;
+  },
+
   // Crew execution
   runCrewGraph: async (graphData, userPrompt) => {
     const payload = {
