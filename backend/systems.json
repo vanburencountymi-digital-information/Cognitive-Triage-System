@@ -1,0 +1,118 @@
+[
+    {
+        "name": "Simple Test System",
+        "description": "A simple test system",
+        "graph": {
+            "nodes": [
+                {
+                    "id": "oracle",
+                    "persona": "Default Civic Information Specialist"
+                }
+            ],
+            "edges": [
+                {
+                    "source": "prompt",
+                    "target": "oracle"
+                }
+            ]
+        },
+        "created_at": "2025-06-26T23:17:35.730046",
+        "updated_at": "2025-06-26T23:17:35.730046"
+    },
+    {
+        "name": "Basic Customer Service",
+        "description": "A simple 2-agent workflow for handling customer inquiries with prompt context",
+        "graph": {
+            "nodes": [
+                {
+                    "id": "specialist",
+                    "persona": "Default Civic Information Specialist"
+                },
+                {
+                    "id": "editor",
+                    "persona": "Default Final Editor"
+                }
+            ],
+            "edges": [
+                {
+                    "source": "prompt",
+                    "target": "specialist"
+                },
+                {
+                    "source": "specialist",
+                    "target": "editor"
+                }
+            ]
+        },
+        "created_at": "2025-06-26T23:18:18.503821",
+        "updated_at": "2025-06-26T23:18:18.503821"
+    },
+    {
+        "name": "Full Quality Assurance",
+        "description": "Complete 4-agent workflow with reframing, generation, analysis, and final editing",
+        "graph": {
+            "nodes": [
+                {
+                    "id": "reframer",
+                    "persona": "Default Prompt Reframer"
+                },
+                {
+                    "id": "specialist",
+                    "persona": "Default Civic Information Specialist"
+                },
+                {
+                    "id": "analyst",
+                    "persona": "Default Public Communication Analyst"
+                },
+                {
+                    "id": "editor",
+                    "persona": "Default Final Editor"
+                }
+            ],
+            "edges": [
+                {
+                    "source": "prompt",
+                    "target": "reframer"
+                },
+                {
+                    "source": "reframer",
+                    "target": "specialist"
+                },
+                {
+                    "source": "specialist",
+                    "target": "analyst"
+                },
+                {
+                    "source": "prompt",
+                    "target": "editor"
+                },
+                {
+                    "source": "analyst",
+                    "target": "editor"
+                }
+            ]
+        },
+        "created_at": "2025-06-26T23:18:20.548611",
+        "updated_at": "2025-06-26T23:18:20.548611"
+    },
+    {
+        "name": "Direct Response",
+        "description": "Single agent workflow for quick, direct responses to user prompts",
+        "graph": {
+            "nodes": [
+                {
+                    "id": "responder",
+                    "persona": "Default Civic Information Specialist"
+                }
+            ],
+            "edges": [
+                {
+                    "source": "prompt",
+                    "target": "responder"
+                }
+            ]
+        },
+        "created_at": "2025-06-26T23:18:22.601656",
+        "updated_at": "2025-06-26T23:18:22.601656"
+    }
+]

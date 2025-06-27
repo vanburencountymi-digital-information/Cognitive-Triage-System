@@ -5,6 +5,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 from crewai import Agent, Task, Crew, Process
+import datetime
 
 # Load environment variables
 load_dotenv()
@@ -25,6 +26,7 @@ CORS(app)  # Enable CORS for all routes
 
 # Configuration
 PERSONAS_FILE = "backend/personas.json"
+SYSTEMS_FILE = "backend/systems.json"
 
 def log_section(title: str):
     logging.info("\n" + "#" * 60)
@@ -43,6 +45,27 @@ def save_personas(personas):
     """Save personas to JSON file"""
     with open(PERSONAS_FILE, 'w') as f:
         json.dump(personas, f, indent=4)
+
+def load_systems():
+    """Load saved systems from JSON file"""
+    if not os.path.exists(SYSTEMS_FILE):
+        return []
+    
+    with open(SYSTEMS_FILE, 'r') as f:
+        return json.load(f)
+
+def save_systems(systems):
+    """Save systems to JSON file"""
+    with open(SYSTEMS_FILE, 'w') as f:
+        json.dump(systems, f, indent=4)
+
+def find_system_by_name(name):
+    """Find a system by name"""
+    systems = load_systems()
+    for system in systems:
+        if system['name'] == name:
+            return system
+    return None
 
 def find_persona_by_name(name):
     """Find a persona by name"""
@@ -428,6 +451,110 @@ def get_special_nodes():
         }
     ]
     return jsonify(special_nodes)
+
+# System Management Endpoints
+
+@app.route('/api/systems', methods=['GET'])
+def get_systems():
+    """Get all saved system configurations"""
+    try:
+        systems = load_systems()
+        return jsonify(systems)
+    except Exception as e:
+        logging.error(f"Error loading systems: {e}")
+        return jsonify({"error": "Failed to load systems"}), 500
+
+@app.route('/api/systems', methods=['POST'])
+def save_system():
+    """Save a new system configuration"""
+    try:
+        data = request.get_json()
+        required_fields = ['name', 'graph']
+        
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error": f"Missing required field: {field}"}), 400
+        
+        systems = load_systems()
+        
+        # Check if system with this name already exists
+        for system in systems:
+            if system['name'] == data['name']:
+                return jsonify({"error": "System with this name already exists"}), 409
+        
+        # Add metadata
+        system_data = {
+            "name": data['name'],
+            "description": data.get('description', ''),
+            "graph": data['graph'],
+            "created_at": datetime.datetime.now().isoformat(),
+            "updated_at": datetime.datetime.now().isoformat()
+        }
+        
+        systems.append(system_data)
+        save_systems(systems)
+        
+        return jsonify({"message": "System saved successfully", "system": system_data}), 201
+        
+    except Exception as e:
+        logging.error(f"Error saving system: {e}")
+        return jsonify({"error": "Failed to save system"}), 500
+
+@app.route('/api/systems/<name>', methods=['GET'])
+def get_system(name):
+    """Get a specific system by name"""
+    try:
+        system = find_system_by_name(name)
+        if system:
+            return jsonify(system)
+        else:
+            return jsonify({"error": "System not found"}), 404
+    except Exception as e:
+        logging.error(f"Error loading system: {e}")
+        return jsonify({"error": "Failed to load system"}), 500
+
+@app.route('/api/systems/<name>', methods=['PUT'])
+def update_system(name):
+    """Update an existing system"""
+    try:
+        data = request.get_json()
+        systems = load_systems()
+        
+        for i, system in enumerate(systems):
+            if system['name'] == name:
+                # Update the system
+                systems[i].update({
+                    "name": data.get('name', name),
+                    "description": data.get('description', system.get('description', '')),
+                    "graph": data.get('graph', system['graph']),
+                    "updated_at": datetime.datetime.now().isoformat()
+                })
+                save_systems(systems)
+                return jsonify({"message": "System updated successfully", "system": systems[i]})
+        
+        return jsonify({"error": "System not found"}), 404
+        
+    except Exception as e:
+        logging.error(f"Error updating system: {e}")
+        return jsonify({"error": "Failed to update system"}), 500
+
+@app.route('/api/systems/<name>', methods=['DELETE'])
+def delete_system(name):
+    """Delete a system"""
+    try:
+        systems = load_systems()
+        
+        for i, system in enumerate(systems):
+            if system['name'] == name:
+                deleted_system = systems.pop(i)
+                save_systems(systems)
+                return jsonify({"message": "System deleted successfully", "system": deleted_system})
+        
+        return jsonify({"error": "System not found"}), 404
+        
+    except Exception as e:
+        logging.error(f"Error deleting system: {e}")
+        return jsonify({"error": "Failed to delete system"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000) 

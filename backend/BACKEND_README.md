@@ -65,6 +65,50 @@ Example response:
 ]
 ```
 
+### System Management
+
+#### Get All Systems
+- **GET** `/api/systems`
+- Returns: Array of saved system configurations
+- Use this to populate a list of available systems in the frontend
+
+#### Save System
+- **POST** `/api/systems`
+- Body:
+```json
+{
+  "name": "System Name",
+  "description": "Optional description of the system",
+  "graph": {
+    "nodes": [...],
+    "edges": [...]
+  }
+}
+```
+
+#### Get Specific System
+- **GET** `/api/systems/<name>`
+- Returns: Specific system configuration
+- Use this to load a saved system into the frontend
+
+#### Update System
+- **PUT** `/api/systems/<name>`
+- Body: Same as save system (all fields optional for update)
+
+#### Delete System
+- **DELETE** `/api/systems/<name>`
+- Removes a saved system
+
+### Example Systems
+
+The backend includes example system configurations in `example_systems.json` that demonstrate different workflow patterns:
+
+1. **Basic Customer Service** - Simple 2-agent workflow
+2. **Full Quality Assurance** - Complete 4-agent workflow with all steps
+3. **Direct Response** - Single agent for quick responses
+
+To load these examples, you can copy them to `systems.json` or use the API to save them individually.
+
 ### Personas Management
 
 #### Get All Personas

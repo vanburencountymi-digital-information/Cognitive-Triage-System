@@ -1,30 +1,28 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import ReactFlow, {
-  addEdge,
   useNodesState,
   useEdgesState,
+  addEdge,
   Controls,
   Background,
   MiniMap,
   Panel,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-
 import CustomNode from './CustomNode';
 import SpecialNode from './SpecialNode';
 import { apiService } from '../api';
+import isEqual from 'lodash.isequal';
 
-// Define nodeTypes outside component to prevent React Flow warning
 const nodeTypes = {
   custom: CustomNode,
   special: SpecialNode,
 };
 
-const GraphCanvas = ({ onGraphChange, selectedPersona, onNodeSelect }) => {
+const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState(null);
-  const [specialNodes, setSpecialNodes] = useState([]);
   const [loadingSpecialNodes, setLoadingSpecialNodes] = useState(true);
   const reactFlowWrapper = useRef(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
@@ -35,7 +33,6 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, onNodeSelect }) => {
       try {
         setLoadingSpecialNodes(true);
         const specialNodesData = await apiService.getSpecialNodes();
-        setSpecialNodes(specialNodesData);
         
         // Convert special nodes to ReactFlow nodes
         const specialFlowNodes = specialNodesData.map((specialNode, index) => ({
@@ -63,10 +60,74 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, onNodeSelect }) => {
     };
 
     loadSpecialNodes();
-  }, []);
+  }, [setNodes]);
+
+  // Handle loaded graph data from parent
+  useEffect(() => {
+    if (graphData && graphData.nodes && graphData.edges) {
+      // Convert graphData to ReactFlow format
+      const flowNodes = graphData.nodes
+        .filter(node => node.id !== 'prompt' && node.type !== 'special')
+        .map((node, idx) => ({
+          id: node.id,
+          type: 'custom',
+          position: { x: 200 + idx * 200, y: 200 + idx * 100 },
+          data: {
+            persona: node.persona,
+            role: node.role || 'Agent',
+            onPersonaChange: (newPersona) => {
+              setNodes((nds) =>
+                nds.map((n) => {
+                  if (n.id === node.id) {
+                    return {
+                      ...n,
+                      data: { ...n.data, persona: newPersona },
+                    };
+                  }
+                  return n;
+                })
+              );
+            },
+            onDelete: () => {
+              setNodes((nds) => nds.filter((n) => n.id !== node.id));
+              setEdges((eds) => eds.filter((e) => e.source !== node.id && e.target !== node.id));
+            },
+          },
+        }));
+
+      const flowEdges = graphData.edges.map((edge, idx) => ({
+        id: `edge-${idx}`,
+        source: edge.source,
+        target: edge.target,
+        type: 'smoothstep',
+      }));
+
+      // Only update if different
+      const currentNodes = nodes.filter(n => n.type !== 'special');
+      const currentEdges = edges;
+
+      if (
+        !isEqual(
+          currentNodes.map(n => ({ id: n.id, persona: n.data.persona, role: n.data.role })),
+          flowNodes.map(n => ({ id: n.id, persona: n.data.persona, role: n.data.role }))
+        ) ||
+        !isEqual(
+          currentEdges.map(e => ({ source: e.source, target: e.target })),
+          flowEdges.map(e => ({ source: e.source, target: e.target }))
+        )
+      ) {
+        setNodes(prevNodes => {
+          const specialNodes = prevNodes.filter(node => node.type === 'special');
+          return [...specialNodes, ...flowNodes];
+        });
+        setEdges(flowEdges);
+      }
+    }
+    // eslint-disable-next-line
+  }, [graphData]); // Only depend on graphData
 
   // Update parent component when graph changes
-  React.useEffect(() => {
+  useEffect(() => {
     const graphData = {
       nodes: nodes.map(node => ({
         id: node.id,
@@ -90,8 +151,7 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, onNodeSelect }) => {
 
   const onNodeClick = useCallback((event, node) => {
     setSelectedNode(node);
-    onNodeSelect(node);
-  }, [onNodeSelect]);
+  }, []);
 
   const onNodeDragStop = useCallback((event, node) => {
     setNodes((nds) =>
@@ -124,24 +184,14 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, onNodeSelect }) => {
         const rect = container.getBoundingClientRect();
         
         // Calculate the center of the current viewport in flow coordinates
-        // The viewport center is at (width/2, height/2) in screen coordinates
-        // We need to convert this to flow coordinates
         const screenCenterX = rect.width / 2;
         const screenCenterY = rect.height / 2;
         
         // Convert screen coordinates to flow coordinates using viewport
-        // Formula: flowX = (screenX - viewport.x) / viewport.zoom
-        // Formula: flowY = (screenY - viewport.y) / viewport.zoom
         centerPosition = {
           x: (screenCenterX - viewport.x) / viewport.zoom,
           y: (screenCenterY - viewport.y) / viewport.zoom,
         };
-        
-        // Debug logging to help troubleshoot
-        console.log('Viewport:', viewport);
-        console.log('Container rect:', rect);
-        console.log('Screen center:', { x: screenCenterX, y: screenCenterY });
-        console.log('Flow center:', centerPosition);
       }
     }
 
@@ -265,11 +315,6 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, onNodeSelect }) => {
             {selectedNode && (
               <div className="info-item">
                 <strong>Selected:</strong> {selectedNode.data.persona || selectedNode.data.type}
-              </div>
-            )}
-            {loadingSpecialNodes && (
-              <div className="info-item" style={{ color: '#666', fontStyle: 'italic' }}>
-                Loading special nodes...
               </div>
             )}
           </div>

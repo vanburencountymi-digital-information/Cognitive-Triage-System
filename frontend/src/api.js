@@ -52,6 +52,48 @@ export const apiService = {
     const response = await api.post('/api/run-crew-graph', payload);
     return response.data;
   },
+
+  // Systems
+  getSystems: async () => {
+    const response = await api.get('/api/systems');
+    return response.data;
+  },
+
+  saveSystem: async (systemData) => {
+    const response = await api.post('/api/systems', systemData);
+    return response.data;
+  },
+
+  getSystem: async (name) => {
+    const response = await api.get(`/api/systems/${encodeURIComponent(name)}`);
+    return response.data;
+  },
+
+  updateSystem: async (name, systemData) => {
+    const response = await api.put(`/api/systems/${encodeURIComponent(name)}`, systemData);
+    return response.data;
+  },
+
+  deleteSystem: async (name) => {
+    const response = await api.delete(`/api/systems/${encodeURIComponent(name)}`);
+    return response.data;
+  },
 };
 
-export default api; 
+export default api;
+
+// Individual exports for easier importing
+export const {
+  healthCheck,
+  getPersonas,
+  createPersona,
+  updatePersona,
+  deletePersona,
+  getSpecialNodes,
+  runCrewGraph,
+  getSystems,
+  saveSystem,
+  getSystem,
+  updateSystem,
+  deleteSystem,
+} = apiService; 

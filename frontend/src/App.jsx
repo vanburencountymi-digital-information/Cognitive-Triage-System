@@ -4,13 +4,13 @@ import GraphCanvas from './components/GraphCanvas';
 import PersonaPanel from './components/PersonaPanel';
 import RunButton from './components/RunButton';
 import ResultsDisplay from './components/ResultsDisplay';
+import SystemManager from './components/SystemManager';
 
 function App() {
   const [selectedPersona, setSelectedPersona] = useState('');
   const [graphData, setGraphData] = useState({ nodes: [], edges: [] });
   const [userPrompt, setUserPrompt] = useState('');
   const [results, setResults] = useState(null);
-  const [selectedNode, setSelectedNode] = useState(null);
 
   const handlePersonaSelect = useCallback((personaName) => {
     setSelectedPersona(personaName);
@@ -20,16 +20,16 @@ function App() {
     setGraphData(newGraphData);
   }, []);
 
-  const handleNodeSelect = useCallback((node) => {
-    setSelectedNode(node);
-  }, []);
-
   const handleResults = useCallback((newResults) => {
     setResults(newResults);
   }, []);
 
   const handleClearResults = useCallback(() => {
     setResults(null);
+  }, []);
+
+  const handleLoadSystem = useCallback((systemGraph) => {
+    setGraphData(systemGraph);
   }, []);
 
   return (
@@ -91,6 +91,12 @@ function App() {
                     selectedPersona={selectedPersona}
                     onPersonaSelect={handlePersonaSelect}
                   />
+                  <div className="mt-3">
+                    <SystemManager
+                      graphData={graphData}
+                      onLoadSystem={handleLoadSystem}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -105,7 +111,7 @@ function App() {
                     <GraphCanvas
                       onGraphChange={handleGraphChange}
                       selectedPersona={selectedPersona}
-                      onNodeSelect={handleNodeSelect}
+                      graphData={graphData}
                     />
                   </div>
                 </div>
