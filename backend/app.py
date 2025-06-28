@@ -443,10 +443,15 @@ def run_crew_graph():
         if not user_api_key:
             return jsonify({"error": "API key is required. Please set your API key in Settings."}), 400
         
-        # Set the user's API key for this request
+        # Set the user's API key for this request - CrewAI uses litellm which needs both
         import openai
-        openai.api_key = user_api_key
+        import os
         
+        # Set both the openai client key and environment variable
+        openai.api_key = user_api_key
+        os.environ['OPENAI_API_KEY'] = user_api_key
+        
+        logging.info("API key configured for both OpenAI client and environment")
         logging.info("Starting crew execution...")
         result = execute_crew_graph(graph_data, user_prompt)
         logging.info("Crew execution completed successfully")
@@ -642,9 +647,15 @@ def test_crew():
         if not user_api_key:
             return jsonify({"error": "API key is required"}), 400
         
-        # Set the user's API key
+        # Set the user's API key - CrewAI uses litellm which needs both
         import openai
+        import os
+        
+        # Set both the openai client key and environment variable
         openai.api_key = user_api_key
+        os.environ['OPENAI_API_KEY'] = user_api_key
+        
+        logging.info("API key configured for debug test")
         
         # Test basic CrewAI functionality
         from crewai import Agent, Task, Crew, Process
