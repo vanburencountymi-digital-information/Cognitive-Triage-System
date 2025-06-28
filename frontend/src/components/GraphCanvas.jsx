@@ -12,6 +12,7 @@ import 'reactflow/dist/style.css';
 import CustomNode from './CustomNode';
 import SpecialNode from './SpecialNode';
 import CustomEdge from './CustomEdge';
+import ContextMenu from './ContextMenu';
 import { apiService } from '../api';
 import isEqual from 'lodash.isequal';
 
@@ -25,16 +26,21 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState(null);
   const [selectedEdge, setSelectedEdge] = useState(null);
-  const [loadingSpecialNodes, setLoadingSpecialNodes] = useState(true);
+  const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
+  const [availablePersonas, setAvailablePersonas] = useState([]);
   const reactFlowWrapper = useRef(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
 
-  // Load special nodes on component mount
+  // Load special nodes and personas on component mount
   useEffect(() => {
-    const loadSpecialNodes = async () => {
+    const loadData = async () => {
       try {
-        setLoadingSpecialNodes(true);
+        // Load special nodes
         const specialNodesData = await apiService.getSpecialNodes();
+        
+        // Load personas
+        const personasData = await apiService.getPersonas();
+        setAvailablePersonas(personasData);
         
         // Convert special nodes to ReactFlow nodes
         const specialFlowNodes = specialNodesData.map((specialNode, index) => ({
@@ -55,13 +61,11 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
           return [...nonSpecialNodes, ...specialFlowNodes];
         });
       } catch (error) {
-        console.error('Failed to load special nodes:', error);
-      } finally {
-        setLoadingSpecialNodes(false);
+        console.error('Failed to load data:', error);
       }
     };
 
-    loadSpecialNodes();
+    loadData();
   }, [setNodes]);
 
   // Handle loaded graph data from parent
@@ -168,13 +172,49 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
   );
 
   const onNodeClick = useCallback((event, node) => {
+    console.log('Node clicked:', node);
     setSelectedNode(node);
     setSelectedEdge(null); // Clear edge selection when clicking node
+    
+    // Calculate context menu position relative to the canvas container
+    if (reactFlowWrapper.current) {
+      const canvasRect = reactFlowWrapper.current.getBoundingClientRect();
+      const nodeRect = event.currentTarget.getBoundingClientRect();
+      
+      const position = {
+        x: nodeRect.right - canvasRect.left + 10, // Position to the right of the node
+        y: nodeRect.top - canvasRect.top,
+      };
+      
+      console.log('Setting context menu position:', position);
+      setContextMenuPosition(position);
+    } else {
+      // Fallback position
+      setContextMenuPosition({ x: 100, y: 100 });
+    }
   }, []);
 
   const onEdgeClick = useCallback((event, edge) => {
+    console.log('Edge clicked:', edge);
     setSelectedEdge(edge);
     setSelectedNode(null); // Clear node selection when clicking edge
+    
+    // Calculate context menu position relative to the canvas container
+    if (reactFlowWrapper.current) {
+      const canvasRect = reactFlowWrapper.current.getBoundingClientRect();
+      const edgeRect = event.currentTarget.getBoundingClientRect();
+      
+      const position = {
+        x: edgeRect.right - canvasRect.left + 10, // Position to the right of the edge
+        y: edgeRect.top - canvasRect.top,
+      };
+      
+      console.log('Setting context menu position:', position);
+      setContextMenuPosition(position);
+    } else {
+      // Fallback position
+      setContextMenuPosition({ x: 100, y: 100 });
+    }
   }, []);
 
   const onEdgeDelete = useCallback((edgeId) => {
@@ -215,6 +255,33 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
       })
     );
   }, [setNodes]);
+
+  // Handle persona change for selected node
+  const handlePersonaChange = useCallback((nodeId, newPersona) => {
+    setNodes((nds) =>
+      nds.map((n) => {
+        if (n.id === nodeId) {
+          return {
+            ...n,
+            data: { ...n.data, persona: newPersona },
+          };
+        }
+        return n;
+      })
+    );
+  }, [setNodes]);
+
+  // Handle node deletion from context menu
+  const handleDeleteNode = useCallback((nodeId) => {
+    setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+    setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
+    setSelectedNode(null);
+  }, [setNodes, setEdges]);
+
+  // Handle edge deletion from context menu
+  const handleDeleteEdge = useCallback((edgeId) => {
+    onEdgeDelete(edgeId);
+  }, [onEdgeDelete]);
 
   // Keyboard delete functionality
   useEffect(() => {
@@ -332,6 +399,12 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
     setReactFlowInstance(instance);
   }, []);
 
+  // Handle canvas click to close context menu
+  const onPaneClick = useCallback(() => {
+    setSelectedNode(null);
+    setSelectedEdge(null);
+  }, []);
+
   // Create edge types with handlers
   const edgeTypes = {
     custom: (props) => (
@@ -360,6 +433,7 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
         edgeTypes={edgeTypes}
         fitView
         attributionPosition="bottom-left"
+        onPaneClick={onPaneClick}
       >
         <Controls />
         <Background />
@@ -401,31 +475,18 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
             </button>
           </div>
         </Panel>
-
-        <Panel position="top-right">
-          <div className="graph-info">
-            <div className="info-item">
-              <strong>Agent Nodes:</strong> {nodes.filter(n => n.type !== 'special').length}
-            </div>
-            <div className="info-item">
-              <strong>Special Nodes:</strong> {nodes.filter(n => n.type === 'special').length}
-            </div>
-            <div className="info-item">
-              <strong>Edges:</strong> {edges.length}
-            </div>
-            {selectedNode && (
-              <div className="info-item">
-                <strong>Selected Node:</strong> {selectedNode.data.persona || selectedNode.data.type}
-              </div>
-            )}
-            {selectedEdge && (
-              <div className="info-item">
-                <strong>Selected Edge:</strong> {selectedEdge.source} → {selectedEdge.target}
-              </div>
-            )}
-          </div>
-        </Panel>
       </ReactFlow>
+
+      {/* Context Menu - positioned outside ReactFlow */}
+      <ContextMenu
+        selectedNode={selectedNode}
+        selectedEdge={selectedEdge}
+        position={contextMenuPosition}
+        onPersonaChange={handlePersonaChange}
+        onDeleteNode={handleDeleteNode}
+        onDeleteEdge={handleDeleteEdge}
+        availablePersonas={availablePersonas}
+      />
     </div>
   );
 };
