@@ -11,6 +11,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import CustomNode from './CustomNode';
 import SpecialNode from './SpecialNode';
+import CustomEdge from './CustomEdge';
 import { apiService } from '../api';
 import isEqual from 'lodash.isequal';
 
@@ -23,6 +24,7 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState(null);
+  const [selectedEdge, setSelectedEdge] = useState(null);
   const [loadingSpecialNodes, setLoadingSpecialNodes] = useState(true);
   const reactFlowWrapper = useRef(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
@@ -99,7 +101,12 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
         id: `edge-${idx}`,
         source: edge.source,
         target: edge.target,
-        type: 'smoothstep',
+        type: 'custom',
+        data: {
+          source: edge.source,
+          target: edge.target,
+          availableNodes: nodes, // Pass available nodes to the edge
+        },
       }));
 
       // Only update if different
@@ -145,13 +152,55 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
   }, [nodes, edges, onGraphChange]);
 
   const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges],
+    (params) => {
+      const newEdge = {
+        ...params,
+        type: 'custom',
+        data: {
+          source: params.source,
+          target: params.target,
+          availableNodes: nodes, // Pass available nodes to the edge
+        },
+      };
+      setEdges((eds) => addEdge(newEdge, eds));
+    },
+    [setEdges, nodes],
   );
 
   const onNodeClick = useCallback((event, node) => {
     setSelectedNode(node);
+    setSelectedEdge(null); // Clear edge selection when clicking node
   }, []);
+
+  const onEdgeClick = useCallback((event, edge) => {
+    setSelectedEdge(edge);
+    setSelectedNode(null); // Clear node selection when clicking edge
+  }, []);
+
+  const onEdgeDelete = useCallback((edgeId) => {
+    setEdges((eds) => eds.filter((e) => e.id !== edgeId));
+    setSelectedEdge(null);
+  }, [setEdges]);
+
+  const onEdgeUpdate = useCallback((edgeId, newConnection) => {
+    setEdges((eds) =>
+      eds.map((edge) => {
+        if (edge.id === edgeId) {
+          return {
+            ...edge,
+            source: newConnection.source,
+            target: newConnection.target,
+            data: {
+              source: newConnection.source,
+              target: newConnection.target,
+              availableNodes: nodes, // Update available nodes
+            },
+          };
+        }
+        return edge;
+      })
+    );
+  }, [setEdges, nodes]);
 
   const onNodeDragStop = useCallback((event, node) => {
     setNodes((nds) =>
@@ -166,6 +215,29 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
       })
     );
   }, [setNodes]);
+
+  // Keyboard delete functionality
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Delete' || event.key === 'Backspace') {
+        if (selectedEdge) {
+          onEdgeDelete(selectedEdge.id);
+        } else if (selectedNode) {
+          // Don't allow deletion of special nodes
+          if (selectedNode.type === 'special') {
+            alert('Special nodes cannot be deleted');
+            return;
+          }
+          setNodes((nds) => nds.filter((n) => n.id !== selectedNode.id));
+          setEdges((eds) => eds.filter((e) => e.source !== selectedNode.id && e.target !== selectedNode.id));
+          setSelectedNode(null);
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [selectedEdge, selectedNode, onEdgeDelete, setNodes, setEdges]);
 
   const addNode = useCallback(() => {
     if (!selectedPersona) {
@@ -240,18 +312,37 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
     }
   }, [selectedNode, setNodes, setEdges]);
 
+  const deleteSelectedEdge = useCallback(() => {
+    if (selectedEdge) {
+      onEdgeDelete(selectedEdge.id);
+    }
+  }, [selectedEdge, onEdgeDelete]);
+
   const clearGraph = useCallback(() => {
     if (window.confirm('Are you sure you want to clear the entire graph? This will remove all agent nodes but keep special nodes.')) {
       // Keep special nodes, remove only agent nodes
       setNodes((nds) => nds.filter((n) => n.type === 'special'));
       setEdges([]);
       setSelectedNode(null);
+      setSelectedEdge(null);
     }
   }, [setNodes, setEdges]);
 
   const onInit = useCallback((instance) => {
     setReactFlowInstance(instance);
   }, []);
+
+  // Create edge types with handlers
+  const edgeTypes = {
+    custom: (props) => (
+      <CustomEdge
+        {...props}
+        onEdgeClick={onEdgeClick}
+        onEdgeUpdate={onEdgeUpdate}
+        onEdgeDelete={onEdgeDelete}
+      />
+    ),
+  };
 
   return (
     <div className="graph-canvas" ref={reactFlowWrapper}>
@@ -262,9 +353,11 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onNodeClick={onNodeClick}
+        onEdgeClick={onEdgeClick}
         onNodeDragStop={onNodeDragStop}
         onInit={onInit}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView
         attributionPosition="bottom-left"
       >
@@ -291,6 +384,14 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
               Delete Node
             </button>
             <button 
+              className="btn btn-danger"
+              onClick={deleteSelectedEdge}
+              disabled={!selectedEdge}
+              title={!selectedEdge ? "Select an edge first" : "Delete selected edge"}
+            >
+              Delete Edge
+            </button>
+            <button 
               className="btn btn-warning"
               onClick={clearGraph}
               disabled={nodes.filter(n => n.type !== 'special').length === 0}
@@ -314,7 +415,12 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
             </div>
             {selectedNode && (
               <div className="info-item">
-                <strong>Selected:</strong> {selectedNode.data.persona || selectedNode.data.type}
+                <strong>Selected Node:</strong> {selectedNode.data.persona || selectedNode.data.type}
+              </div>
+            )}
+            {selectedEdge && (
+              <div className="info-item">
+                <strong>Selected Edge:</strong> {selectedEdge.source} → {selectedEdge.target}
               </div>
             )}
           </div>
