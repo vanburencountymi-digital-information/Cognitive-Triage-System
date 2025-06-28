@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { getUserApiKey } from '../api';
+import { apiService } from '../api';
 
 const DebugPanel = ({ isOpen, onClose }) => {
   const [testResults, setTestResults] = useState([]);
@@ -34,7 +34,7 @@ const DebugPanel = ({ isOpen, onClose }) => {
   };
 
   const testApiKeyValidation = async () => {
-    const apiKey = await getUserApiKey();
+    const apiKey = await apiService.getUserApiKey();
     if (!apiKey) {
       throw new Error('No API key available');
     }
@@ -54,7 +54,7 @@ const DebugPanel = ({ isOpen, onClose }) => {
   };
 
   const testSimpleCrew = async () => {
-    const apiKey = await getUserApiKey();
+    const apiKey = await apiService.getUserApiKey();
     if (!apiKey) {
       throw new Error('No API key available');
     }
