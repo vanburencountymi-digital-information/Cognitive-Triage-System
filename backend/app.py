@@ -593,12 +593,15 @@ def validate_api_key():
             })
             
         except Exception as e:
-            # Log the error for debugging but don't expose details to user
-            logging.error(f"API key validation failed: {str(e)}")
+            # Log only the error type, not the full error which might contain the key
+            error_type = type(e).__name__
+            logging.error(f"API key validation failed with error type: {error_type}")
             return jsonify({"error": "Invalid API key. Please check your key and try again."}), 400
             
     except Exception as e:
-        logging.error(f"Error validating API key: {e}")
+        # Log only the error type, not the full error
+        error_type = type(e).__name__
+        logging.error(f"Error validating API key (type: {error_type})")
         return jsonify({"error": "Error validating API key"}), 500
 
 if __name__ == '__main__':

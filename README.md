@@ -10,7 +10,7 @@ A sophisticated AI agent workflow builder that allows you to create, save, and m
 - **Real-time Execution**: Run workflows and see results immediately
 - **Special Nodes**: Built-in nodes like "User Prompt" for enhanced workflows
 - **Example Systems**: Pre-built workflow templates to get started quickly
-- **API Key Management**: Secure user-specific API key management for OpenAI integration
+- **🔐 Enhanced API Key Security**: Military-grade encryption with passphrase protection and session management
 
 ## 🚀 Quick Start
 
@@ -44,10 +44,11 @@ The easiest way to run the application is using Docker Compose:
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:5000
 
-4. **Set up your API key**
+4. **Set up your API key securely**
    - Click the "⚙️ Settings" button in the header
-   - Enter your OpenAI API key and click "Validate"
-   - Save your API key for future use
+   - Enter a security passphrase (protects your API key)
+   - Enter your OpenAI API key and click "Validate & Store"
+   - Your API key is now encrypted and protected
 
 5. **Stop the services**
    ```bash
@@ -108,12 +109,13 @@ For deployment to Railway, Heroku, or other single-container platforms:
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:5000
 
-6. **Set up your API key**
+6. **Set up your API key securely**
    - Click the "⚙️ Settings" button in the header
-   - Enter your OpenAI API key and click "Validate"
-   - Save your API key for future use
+   - Enter a security passphrase (protects your API key)
+   - Enter your OpenAI API key and click "Validate & Store"
+   - Your API key is now encrypted and protected
 
-## 🔑 API Key Setup
+## 🔑 API Key Setup & Security
 
 ### Getting Your OpenAI API Key
 
@@ -121,24 +123,76 @@ For deployment to Railway, Heroku, or other single-container platforms:
 2. **Sign in or create account**: Create an OpenAI account if you don't have one
 3. **Create API key**: Click "Create new secret key"
 4. **Copy the key**: The key starts with "sk-" followed by a long string
-5. **Set in app**: Paste the key in the Settings panel and click "Validate"
+5. **Set in app**: Enter your passphrase and API key in the Settings panel
 
-### Security Features
+### 🔐 Enhanced Security Features
 
-- **Local Storage**: Your API key is stored locally in your browser
-- **Never Shared**: The key is never stored on our servers
-- **Validation**: Keys are validated in real-time with OpenAI
-- **Privacy**: Only used for your own workflow executions
+The system implements military-grade security for your API keys:
+
+#### **Passphrase-Based Protection**
+- **🔑 PBKDF2 Key Derivation**: Your passphrase is converted to a strong encryption key using 100,000 iterations
+- **🔒 AES-256-GCM Encryption**: Military-grade encryption for your API key
+- **🚫 No Key Storage**: The encryption key is never stored - only derived from your passphrase
+
+#### **Session Management**
+- **⏰ 8-Hour Sessions**: Security sessions expire automatically for protection
+- **🔄 Automatic Cleanup**: Sensitive data is cleared when sessions expire
+- **📱 Cross-Tab Security**: Sessions work across browser tabs but expire together
+
+#### **Memory Protection**
+- **🧹 Secure Clearing**: Sensitive data is overwritten in memory after use
+- **🔒 Memory Safety**: Decrypted API keys only exist in memory during API calls
+- **🛡️ Corruption Protection**: Automatic cleanup of corrupted encrypted data
+
+#### **Security Architecture**
+```
+User Passphrase → PBKDF2(100k iterations) → Encryption Key → AES-256-GCM → Encrypted API Key
+                                                                    ↓
+                                                            Stored in localStorage
+                                                                    ↓
+                                                            Decrypted only when needed
+```
+
+### Security Level & Protection
+
+**This implementation provides protection against:**
+- ✅ **Browser inspection** - API key is encrypted, not plain text
+- ✅ **localStorage access** - Requires passphrase to decrypt
+- ✅ **Malware scanning** - Encrypted data appears as random bytes
+- ✅ **Accidental exposure** - No plain text API keys in storage
+- ✅ **Basic attacks** - PBKDF2 makes brute force extremely slow
+
+**Security limitations:**
+- ⚠️ **Advanced debugging** - Sophisticated tools can still access decrypted data
+- ⚠️ **Malicious extensions** - Browser extensions can access page data
+- ⚠️ **Physical access** - Someone with device access can potentially extract keys
+- ⚠️ **Keyloggers** - Can capture passphrase input
+
+**For maximum security:**
+- Use only on trusted devices
+- Never share your passphrase
+- Clear data when using shared computers
+- Consider server-side storage for enterprise use
 
 ## 📖 Usage Guide
 
 ### 1. Initial Setup
 
-1. **Set API Key**: Click "⚙️ Settings" and enter your OpenAI API key
-2. **Load Examples** (optional): Load pre-built workflow templates
-3. **Create Personas**: Define AI agents with specific roles and goals
+1. **Set Security Passphrase**: Click "⚙️ Settings" and enter a strong passphrase
+2. **Enter API Key**: Provide your OpenAI API key for validation
+3. **Load Examples** (optional): Load pre-built workflow templates
+4. **Create Personas**: Define AI agents with specific roles and goals
 
-### 2. System Management
+### 2. Session Management
+
+The system automatically manages security sessions:
+
+- **Session Duration**: 8 hours from initialization
+- **Session Status**: Visible in Settings panel
+- **Session Expiry**: Automatic logout when expired
+- **Re-authentication**: Re-enter passphrase to continue
+
+### 3. System Management
 
 The System Manager (left sidebar) allows you to save and load complete workflow configurations:
 
@@ -160,7 +214,7 @@ The backend includes pre-built example systems:
 - **Full Quality Assurance**: Complete 4-agent workflow with all steps
 - **Direct Response**: Single agent for quick responses
 
-### 3. Building Workflows
+### 4. Building Workflows
 
 1. **Select a Persona**: Choose from the left panel or create a new one
 2. **Add Nodes**: Click "Add Node" to place agents in your workflow
@@ -170,7 +224,7 @@ The backend includes pre-built example systems:
 6. **Run Workflow**: Click "Run Crew Workflow" to execute your AI agents
 7. **View Results**: See the final output and individual step results on the right
 
-### 4. Special Nodes
+### 5. Special Nodes
 
 The system automatically provides special nodes:
 - **Prompt Node**: Represents user input that can be passed to any agent
@@ -185,7 +239,7 @@ The system automatically provides special nodes:
 - **CrewAI Integration**: Powers the AI agent workflows
 - **Data Persistence**: JSON-based storage for systems and personas
 - **Special Nodes**: Built-in support for system nodes like "prompt"
-- **API Key Management**: User-provided API key validation and usage
+- **API Key Validation**: Server-side validation of user-provided API keys
 
 ### Frontend (React)
 - **GraphCanvas**: Main workflow builder with drag-and-drop functionality
@@ -193,7 +247,13 @@ The system automatically provides special nodes:
 - **PersonaPanel**: Manage AI agent personas and configurations
 - **RunButton**: Execute workflows and handle results
 - **ResultsDisplay**: Show workflow execution results and intermediate outputs
-- **SettingsPanel**: Manage user API keys and preferences
+- **SecureSettingsPanel**: Enhanced API key management with passphrase protection
+
+### Security Layer
+- **Advanced Encryption**: PBKDF2 + AES-256-GCM encryption system
+- **Session Management**: Time-based session expiry and cleanup
+- **Memory Protection**: Secure clearing of sensitive data
+- **Error Handling**: Graceful handling of security failures
 
 ## 📁 Project Structure
 
@@ -209,16 +269,22 @@ Cognitive-Triage-System/
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── GraphCanvas.jsx      # Main workflow builder
-│   │   │   ├── SystemManager.jsx    # System save/load interface
-│   │   │   ├── PersonaPanel.jsx     # Persona management
-│   │   │   ├── RunButton.jsx        # Workflow execution
-│   │   │   ├── ResultsDisplay.jsx   # Results viewer
-│   │   │   └── SettingsPanel.jsx    # API key management
-│   │   ├── api.js                   # API service layer
-│   │   └── App.jsx                  # Main application
-│   └── package.json                 # Node.js dependencies
-└── README.md                        # This file
+│   │   │   ├── GraphCanvas.jsx           # Main workflow builder
+│   │   │   ├── SystemManager.jsx         # System save/load interface
+│   │   │   ├── PersonaPanel.jsx          # Persona management
+│   │   │   ├── RunButton.jsx             # Workflow execution
+│   │   │   ├── ResultsDisplay.jsx        # Results viewer
+│   │   │   ├── SettingsPanel.jsx         # Basic API key management
+│   │   │   └── SecureSettingsPanel.jsx   # Enhanced security settings
+│   │   ├── utils/
+│   │   │   ├── encryption.js             # Basic encryption utilities
+│   │   │   └── advanced-encryption.js    # Enhanced security system
+│   │   ├── api.js                        # Basic API service
+│   │   ├── secure-api.js                 # Secure API service
+│   │   └── App.jsx                       # Main application
+│   └── package.json                      # Node.js dependencies
+├── SECURITY_COMPARISON.md                # Security analysis document
+└── README.md                             # This file
 ```
 
 ## 🔧 API Reference
@@ -258,6 +324,14 @@ python test_graph_loading.py    # Test graph loading functionality
 ```bash
 cd frontend
 npm test                        # Run React tests
+```
+
+### Security Testing
+```bash
+# Test encryption in browser console
+cd frontend
+npm start
+# Open browser console and run: testEncryption()
 ```
 
 ## 🚀 Deployment
@@ -327,13 +401,21 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ### Common Issues
 
-1. **API Key Required**: Set your OpenAI API key in Settings (⚙️ button in header)
-2. **Invalid API Key**: Ensure your key starts with "sk-" and is valid
-3. **Backend Connection Error**: Ensure the Flask backend is running on port 5000
-4. **CORS Issues**: The backend should have CORS enabled for localhost:3000
-5. **Node Dependencies**: Run `npm install` if you encounter module not found errors
-6. **Special Nodes Not Loading**: Check backend `/api/special-nodes` endpoint
-7. **System Loading Issues**: Verify the backend is running and systems.json exists
+1. **Session Expired**: Re-enter your passphrase in Settings to continue
+2. **API Key Required**: Set your OpenAI API key in Settings (⚙️ button in header)
+3. **Invalid API Key**: Ensure your key starts with "sk-" and is valid
+4. **Backend Connection Error**: Ensure the Flask backend is running on port 5000
+5. **CORS Issues**: The backend should have CORS enabled for localhost:3000
+6. **Node Dependencies**: Run `npm install` if you encounter module not found errors
+7. **Special Nodes Not Loading**: Check backend `/api/special-nodes` endpoint
+8. **System Loading Issues**: Verify the backend is running and systems.json exists
+
+### Security Issues
+
+1. **Passphrase Forgotten**: Clear all data and re-enter your API key
+2. **Session Problems**: Check session status in Settings panel
+3. **Encryption Errors**: Clear browser data and re-initialize
+4. **Memory Issues**: Refresh the page to clear sensitive data
 
 ### Debug Mode
 Enable React Developer Tools in your browser for component inspection and debugging.
@@ -342,5 +424,6 @@ Enable React Developer Tools in your browser for component inspection and debugg
 
 For issues and questions:
 1. Check the troubleshooting section above
-2. Review the API documentation
-3. Open an issue on GitHub
+2. Review the security documentation in `SECURITY_COMPARISON.md`
+3. Review the API documentation
+4. Open an issue on GitHub

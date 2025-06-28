@@ -1,19 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import './SettingsPanel.css';
+import { 
+  storeEncryptedApiKey, 
+  getDecryptedApiKey, 
+  clearStoredApiKey, 
+  hasStoredApiKey 
+} from '../utils/encryption';
 
 const SettingsPanel = ({ isOpen, onClose }) => {
   const [apiKey, setApiKey] = useState('');
   const [isValidating, setIsValidating] = useState(false);
   const [validationMessage, setValidationMessage] = useState('');
   const [isValid, setIsValid] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load saved API key from localStorage
-    const savedApiKey = localStorage.getItem('userApiKey');
-    if (savedApiKey) {
-      setApiKey(savedApiKey);
-      setIsValid(true);
-    }
+    // Load saved API key from encrypted storage
+    const loadSavedApiKey = async () => {
+      try {
+        if (hasStoredApiKey()) {
+          const savedApiKey = await getDecryptedApiKey();
+          if (savedApiKey) {
+            setApiKey(savedApiKey);
+            setIsValid(true);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load saved API key:', error);
+        setValidationMessage('❌ Failed to load saved API key. Please re-enter your key.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadSavedApiKey();
   }, []);
 
   const handleApiKeyChange = (e) => {
@@ -26,6 +46,17 @@ const SettingsPanel = ({ isOpen, onClose }) => {
   const validateApiKey = async () => {
     if (!apiKey.trim()) {
       setValidationMessage('Please enter an API key');
+      return;
+    }
+
+    // Additional client-side validation
+    if (!apiKey.trim().startsWith('sk-')) {
+      setValidationMessage('❌ Invalid API key format. Should start with "sk-"');
+      return;
+    }
+
+    if (apiKey.trim().length < 20) {
+      setValidationMessage('❌ API key appears too short. Please check your key.');
       return;
     }
 
@@ -46,7 +77,14 @@ const SettingsPanel = ({ isOpen, onClose }) => {
       if (response.ok) {
         setValidationMessage('✅ API key is valid!');
         setIsValid(true);
-        localStorage.setItem('userApiKey', apiKey.trim());
+        // Store encrypted version after successful validation
+        try {
+          await storeEncryptedApiKey(apiKey.trim());
+        } catch (encryptError) {
+          console.error('Failed to encrypt API key:', encryptError);
+          setValidationMessage('✅ API key is valid, but failed to save securely. Please try again.');
+          setIsValid(false);
+        }
       } else {
         setValidationMessage(`❌ ${data.error || 'Invalid API key'}`);
         setIsValid(false);
@@ -63,13 +101,12 @@ const SettingsPanel = ({ isOpen, onClose }) => {
     setApiKey('');
     setIsValid(false);
     setValidationMessage('');
-    localStorage.removeItem('userApiKey');
+    clearStoredApiKey();
   };
 
   const handleSave = () => {
     if (isValid) {
-      localStorage.setItem('userApiKey', apiKey.trim());
-      setValidationMessage('✅ API key saved successfully!');
+      setValidationMessage('✅ API key saved securely!');
       setTimeout(() => {
         onClose();
       }, 1500);
@@ -92,7 +129,7 @@ const SettingsPanel = ({ isOpen, onClose }) => {
           <div className="setting-section">
             <h3>API Key Configuration</h3>
             <p className="setting-description">
-              Enter your OpenAI API key to use the AI agents. Your API key is stored locally and never shared.
+              Enter your OpenAI API key to use the AI agents. Your API key is encrypted and stored locally.
             </p>
             
             <div className="api-key-input-group">
@@ -103,12 +140,13 @@ const SettingsPanel = ({ isOpen, onClose }) => {
                   id="apiKey"
                   value={apiKey}
                   onChange={handleApiKeyChange}
-                  placeholder="sk-..."
+                  placeholder={isLoading ? "Loading..." : "sk-..."}
+                  disabled={isLoading}
                   className={isValid ? 'valid' : ''}
                 />
                 <button 
                   onClick={validateApiKey}
-                  disabled={isValidating || !apiKey.trim()}
+                  disabled={isValidating || !apiKey.trim() || isLoading}
                   className="validate-button"
                 >
                   {isValidating ? 'Validating...' : 'Validate'}
@@ -148,7 +186,11 @@ const SettingsPanel = ({ isOpen, onClose }) => {
                 <li>Paste it above and click "Validate"</li>
               </ol>
               <p className="security-note">
-                🔒 Your API key is stored locally in your browser and is never sent to our servers except for validation.
+                🔒 Your API key is encrypted and stored locally in your browser using AES-256 encryption. 
+                It is never sent to our servers except for validation and workflow execution.
+                <br />
+                <strong>Security Note:</strong> While encrypted, the key can still be accessed by scripts running on this page. 
+                Only use this on trusted devices and clear your API key when using shared computers.
               </p>
             </div>
           </div>

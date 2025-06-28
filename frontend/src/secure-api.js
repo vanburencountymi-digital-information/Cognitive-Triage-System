@@ -1,8 +1,7 @@
 import axios from 'axios';
-import { getDecryptedApiKey, hasStoredApiKey } from './utils/encryption';
+import { secureApiKeyManager } from './utils/advanced-encryption';
 
 // Create axios instance with base configuration
-// Use relative URLs for production compatibility
 const api = axios.create({
   baseURL: process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000',
   headers: {
@@ -10,10 +9,10 @@ const api = axios.create({
   },
 });
 
-// Helper function to get user API key from encrypted storage
+// Helper function to get user API key from secure storage
 const getUserApiKey = async () => {
   try {
-    return await getDecryptedApiKey();
+    return await secureApiKeyManager.retrieve();
   } catch (error) {
     console.error('Failed to get API key:', error);
     return null;
@@ -22,11 +21,21 @@ const getUserApiKey = async () => {
 
 // Helper function to check if user has API key
 const hasUserApiKey = () => {
-  return hasStoredApiKey();
+  return secureApiKeyManager.hasKey();
+};
+
+// Helper function to get session status
+const getSessionStatus = () => {
+  return secureApiKeyManager.getSessionStatus();
 };
 
 // API methods
-export const apiService = {
+export const secureApiService = {
+  // Session management
+  getSessionStatus,
+  initializeSession: secureApiKeyManager.initialize,
+  clearSession: secureApiKeyManager.clear,
+  
   // API Key management
   validateApiKey: async (apiKey) => {
     const response = await api.post('/api/validate-api-key', { apiKey });
@@ -69,10 +78,14 @@ export const apiService = {
     return response.data;
   },
 
-  // Crew execution
+  // Crew execution with secure API key
   runCrewGraph: async (graphData, userPrompt) => {
     const userApiKey = await getUserApiKey();
     if (!userApiKey) {
+      const sessionStatus = getSessionStatus();
+      if (!sessionStatus.valid) {
+        throw new Error('Session expired. Please re-enter your passphrase in Settings.');
+      }
       throw new Error('API key is required. Please set your API key in Settings.');
     }
 
@@ -81,6 +94,7 @@ export const apiService = {
       user_prompt: userPrompt,
       user_api_key: userApiKey
     };
+    
     const response = await api.post('/api/run-crew-graph', payload);
     return response.data;
   },
@@ -116,6 +130,8 @@ export default api;
 
 // Individual exports for easier importing
 export const {
+  initializeSession,
+  clearSession,
   validateApiKey,
   hasApiKey,
   healthCheck,
@@ -130,4 +146,7 @@ export const {
   getSystem,
   updateSystem,
   deleteSystem,
-} = apiService; 
+} = secureApiService;
+
+// Export session status separately to avoid conflicts
+export { getSessionStatus }; 
