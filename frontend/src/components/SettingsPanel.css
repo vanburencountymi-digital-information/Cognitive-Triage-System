@@ -268,4 +268,140 @@
   .api-key-actions {
     flex-direction: column;
   }
+}
+
+/* Debug Panel Styles */
+.debug-actions {
+  margin: 20px 0;
+  display: flex;
+  gap: 10px;
+}
+
+.debug-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.debug-actions .btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.debug-actions .btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.debug-actions .btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.debug-actions .btn-secondary:hover {
+  background-color: #545b62;
+}
+
+.test-results {
+  margin: 20px 0;
+}
+
+.results-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.test-result {
+  margin: 10px 0;
+  padding: 15px;
+  border-radius: 5px;
+  border-left: 4px solid;
+}
+
+.test-result.success {
+  background-color: #d4edda;
+  border-left-color: #28a745;
+}
+
+.test-result.error {
+  background-color: #f8d7da;
+  border-left-color: #dc3545;
+}
+
+.test-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.test-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.test-status {
+  font-size: 16px;
+}
+
+.test-message {
+  font-size: 13px;
+  color: #666;
+}
+
+.test-details {
+  margin-top: 10px;
+}
+
+.test-details summary {
+  cursor: pointer;
+  font-weight: 500;
+  color: #007bff;
+  margin-bottom: 5px;
+}
+
+.test-details pre {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 3px;
+  font-size: 12px;
+  overflow-x: auto;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.debug-info {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+.debug-info h4 {
+  margin-top: 0;
+  color: #495057;
+}
+
+.debug-info ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.debug-info li {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.debug-note {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 3px;
+  font-size: 13px;
+  color: #856404;
 } 

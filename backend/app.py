@@ -142,196 +142,209 @@ def execute_crew_graph(graph_data, user_prompt):
     Returns:
         dict with final output and step outputs
     """
-    log_section("New Crew Run Started")
-    logging.info(f"User Prompt: {user_prompt}")
-    
-    nodes = graph_data.get('nodes', [])
-    edges = graph_data.get('edges', [])
-    
-    logging.info(f"Graph Nodes: {[node.get('id') for node in nodes]}")
-    logging.info(f"Graph Edges: {[(edge.get('source'), edge.get('target')) for edge in edges]}")
-    
-    if not nodes:
-        raise ValueError("No nodes provided in graph")
-    
-    # Create a mapping of node IDs to personas
-    node_map = {}
-    tasks = {}
-    
-    # Create the special Prompt task
-    prompt_task = create_prompt_task(user_prompt)
-    tasks['prompt'] = prompt_task
-    node_map['prompt'] = {'id': 'prompt', 'persona': 'Prompt', 'role': 'Prompt Provider'}
-    logging.info("Created special 'prompt' node")
-    
-    # First pass: create all agents and tasks
-    for node in nodes:
-        node_id = node.get('id')
-        persona_name = node.get('persona')
+    try:
+        log_section("New Crew Run Started")
+        logging.info(f"User Prompt: {user_prompt}")
         
-        if not node_id or not persona_name:
-            continue
+        nodes = graph_data.get('nodes', [])
+        edges = graph_data.get('edges', [])
+        
+        logging.info(f"Graph Nodes: {[node.get('id') for node in nodes]}")
+        logging.info(f"Graph Edges: {[(edge.get('source'), edge.get('target')) for edge in edges]}")
+        
+        if not nodes:
+            raise ValueError("No nodes provided in graph")
+        
+        # Create a mapping of node IDs to personas
+        node_map = {}
+        tasks = {}
+        
+        # Create the special Prompt task
+        prompt_task = create_prompt_task(user_prompt)
+        tasks['prompt'] = prompt_task
+        node_map['prompt'] = {'id': 'prompt', 'persona': 'Prompt', 'role': 'Prompt Provider'}
+        logging.info("Created special 'prompt' node")
+        
+        # First pass: create all agents and tasks
+        for node in nodes:
+            node_id = node.get('id')
+            persona_name = node.get('persona')
             
-        persona = find_persona_by_name(persona_name)
-        if not persona:
-            logging.warning(f"Persona '{persona_name}' not found for node {node_id}")
-            continue
-        
-        # Create task (context will be set in second pass)
-        task = create_task_from_persona(persona, user_prompt=user_prompt)
-        tasks[node_id] = task
-        node_map[node_id] = node
-        logging.info(f"Created task for node '{node_id}' with persona '{persona_name}'")
-    
-    # Validate that we have at least one task (excluding prompt)
-    if len(tasks) <= 1:  # Only prompt task exists
-        raise ValueError("No valid personas found for any nodes in the graph. Please ensure the persona names match those in personas.json")
-    
-    # Second pass: set up task dependencies based on edges
-    logging.info("Setting up task dependencies...")
-    for edge in edges:
-        source_id = edge.get('source')
-        target_id = edge.get('target')
-        
-        if source_id in tasks and target_id in tasks:
-            # Add source task as context for target task
-            if tasks[target_id].context is None:
-                tasks[target_id].context = []
-            tasks[target_id].context.append(tasks[source_id])
-            logging.info(f"Added edge: {source_id} -> {target_id}")
-        else:
-            logging.warning(f"Invalid edge: {source_id} -> {target_id} (one or both nodes not found)")
-    
-    # Third pass: handle prompt context for tasks that need it
-    # Find tasks that have edges from 'prompt' and add prompt context
-    logging.info("Processing prompt context...")
-    for edge in edges:
-        source_id = edge.get('source')
-        target_id = edge.get('target')
-        
-        if source_id == 'prompt' and target_id in tasks:
-            logging.info(f"Adding prompt context to node '{target_id}'")
-            # This task needs the original prompt context
-            # Recreate the task with prompt context
-            persona_name = node_map[target_id].get('persona')
+            if not node_id or not persona_name:
+                logging.warning(f"Skipping node with missing id or persona: {node}")
+                continue
+                
             persona = find_persona_by_name(persona_name)
-            if persona:
-                # Get existing context (excluding prompt task)
-                existing_context = []
-                if tasks[target_id].context:
-                    existing_context = [ctx for ctx in tasks[target_id].context if ctx != prompt_task]
-                
-                logging.info(f"Node '{target_id}' will receive:")
-                logging.info(f"  - Original prompt context")
-                if existing_context:
-                    logging.info(f"  - Context from: {[ctx.agent.role for ctx in existing_context]}")
-                else:
-                    logging.info(f"  - No additional context from other agents")
-                
-                # Recreate task with prompt context
-                new_task = create_task_from_persona(
-                    persona, 
-                    context_tasks=existing_context,
-                    user_prompt=user_prompt,
-                    prompt_context=user_prompt
-                )
-                tasks[target_id] = new_task
-                logging.info(f"Recreated task for '{target_id}' with prompt context")
-    
-    # Log final context for each task
-    logging.info("Final task context summary:")
-    for node_id, task in tasks.items():
-        if node_id == 'prompt':
-            logging.info(f"  {node_id}: Special prompt node (no execution needed)")
-        else:
-            context_sources = []
-            if task.context:
-                for ctx in task.context:
-                    if ctx == prompt_task:
-                        context_sources.append("original prompt")
-                    else:
-                        context_sources.append(f"output from {ctx.agent.role}")
+            if not persona:
+                logging.warning(f"Persona '{persona_name}' not found for node {node_id}")
+                continue
             
-            if context_sources:
-                logging.info(f"  {node_id} ({task.agent.role}): Will receive context from {', '.join(context_sources)}")
-            else:
-                logging.info(f"  {node_id} ({task.agent.role}): No context (entry point)")
-    
-    # Find tasks with no dependencies (entry points) - exclude prompt task
-    entry_tasks = []
-    for node_id, task in tasks.items():
-        if node_id != 'prompt' and (not task.context or all(ctx == prompt_task for ctx in task.context)):
-            entry_tasks.append(task)
-    
-    if not entry_tasks:
-        # If no entry points found, use all tasks except prompt
-        entry_tasks = [task for node_id, task in tasks.items() if node_id != 'prompt']
-    
-    logging.info(f"Entry points: {[task.agent.role for task in entry_tasks]}")
-    
-    # Create and run the crew (exclude prompt task from execution)
-    all_agents = [task.agent for node_id, task in tasks.items() if node_id != 'prompt']
-    all_tasks = [task for node_id, task in tasks.items() if node_id != 'prompt']
-    
-    # Additional validation
-    if not all_agents:
-        raise ValueError("No agents could be created from the provided personas")
-    if not all_tasks:
-        raise ValueError("No tasks could be created from the provided personas")
-    
-    logging.info("Starting crew execution...")
-    crew = Crew(
-        agents=all_agents,
-        tasks=all_tasks,
-        process=Process.sequential,
-        verbose=True
-    )
-    
-    final_output = crew.kickoff()
-    
-    # Extract raw output from CrewOutput object
-    if hasattr(final_output, 'raw'):
-        final_output_text = final_output.raw
-    else:
-        final_output_text = str(final_output)
-    
-    # Collect step outputs and log what each task received
-    steps_output = {}
-    logging.info("Task execution results:")
-    for node_id, task in tasks.items():
-        output = "Task did not produce output."
-        if task.output:
-            output = task.output.raw
+            try:
+                # Create task (context will be set in second pass)
+                task = create_task_from_persona(persona, user_prompt=user_prompt)
+                tasks[node_id] = task
+                node_map[node_id] = node
+                logging.info(f"Created task for node '{node_id}' with persona '{persona_name}'")
+            except Exception as e:
+                logging.error(f"Failed to create task for node '{node_id}' with persona '{persona_name}': {str(e)}")
+                continue
         
-        steps_output[node_id] = {
-            "output": output,
-            "persona": node_map[node_id].get('persona'),
-            "role": node_map[node_id].get('role', '')
+        # Validate that we have at least one task (excluding prompt)
+        if len(tasks) <= 1:  # Only prompt task exists
+            raise ValueError("No valid personas found for any nodes in the graph. Please ensure the persona names match those in personas.json")
+        
+        # Second pass: set up task dependencies based on edges
+        logging.info("Setting up task dependencies...")
+        for edge in edges:
+            source_id = edge.get('source')
+            target_id = edge.get('target')
+            
+            if source_id in tasks and target_id in tasks:
+                # Add source task as context for target task
+                if tasks[target_id].context is None:
+                    tasks[target_id].context = []
+                tasks[target_id].context.append(tasks[source_id])
+                logging.info(f"Added edge: {source_id} -> {target_id}")
+            else:
+                logging.warning(f"Invalid edge: {source_id} -> {target_id} (one or both nodes not found)")
+        
+        # Third pass: handle prompt context for tasks that need it
+        # Find tasks that have edges from 'prompt' and add prompt context
+        logging.info("Processing prompt context...")
+        for edge in edges:
+            source_id = edge.get('source')
+            target_id = edge.get('target')
+            
+            if source_id == 'prompt' and target_id in tasks:
+                logging.info(f"Adding prompt context to node '{target_id}'")
+                # This task needs the original prompt context
+                # Recreate the task with prompt context
+                persona_name = node_map[target_id].get('persona')
+                persona = find_persona_by_name(persona_name)
+                if persona:
+                    # Get existing context (excluding prompt task)
+                    existing_context = []
+                    if tasks[target_id].context:
+                        existing_context = [ctx for ctx in tasks[target_id].context if ctx != prompt_task]
+                    
+                    logging.info(f"Node '{target_id}' will receive:")
+                    logging.info(f"  - Original prompt context")
+                    if existing_context:
+                        logging.info(f"  - Context from: {[ctx.agent.role for ctx in existing_context]}")
+                    else:
+                        logging.info(f"  - No additional context from other agents")
+                    
+                    # Recreate task with prompt context
+                    new_task = create_task_from_persona(
+                        persona, 
+                        context_tasks=existing_context,
+                        user_prompt=user_prompt,
+                        prompt_context=user_prompt
+                    )
+                    tasks[target_id] = new_task
+                    logging.info(f"Recreated task for '{target_id}' with prompt context")
+        
+        # Log final context for each task
+        logging.info("Final task context summary:")
+        for node_id, task in tasks.items():
+            if node_id == 'prompt':
+                logging.info(f"  {node_id}: Special prompt node (no execution needed)")
+            else:
+                context_sources = []
+                if task.context:
+                    for ctx in task.context:
+                        if ctx == prompt_task:
+                            context_sources.append("original prompt")
+                        else:
+                            context_sources.append(f"output from {ctx.agent.role}")
+                
+                if context_sources:
+                    logging.info(f"  {node_id} ({task.agent.role}): Will receive context from {', '.join(context_sources)}")
+                else:
+                    logging.info(f"  {node_id} ({task.agent.role}): No context (entry point)")
+        
+        # Find tasks with no dependencies (entry points) - exclude prompt task
+        entry_tasks = []
+        for node_id, task in tasks.items():
+            if node_id != 'prompt' and (not task.context or all(ctx == prompt_task for ctx in task.context)):
+                entry_tasks.append(task)
+        
+        if not entry_tasks:
+            # If no entry points found, use all tasks except prompt
+            entry_tasks = [task for node_id, task in tasks.items() if node_id != 'prompt']
+        
+        logging.info(f"Entry points: {[task.agent.role for task in entry_tasks]}")
+        
+        # Create and run the crew (exclude prompt task from execution)
+        all_agents = [task.agent for node_id, task in tasks.items() if node_id != 'prompt']
+        all_tasks = [task for node_id, task in tasks.items() if node_id != 'prompt']
+        
+        # Additional validation
+        if not all_agents:
+            raise ValueError("No agents could be created from the provided personas")
+        if not all_tasks:
+            raise ValueError("No tasks could be created from the provided personas")
+        
+        logging.info("Starting crew execution...")
+        crew = Crew(
+            agents=all_agents,
+            tasks=all_tasks,
+            process=Process.sequential,
+            verbose=True
+        )
+        
+        final_output = crew.kickoff()
+        
+        # Extract raw output from CrewOutput object
+        if hasattr(final_output, 'raw'):
+            final_output_text = final_output.raw
+        else:
+            final_output_text = str(final_output)
+        
+        # Collect step outputs and log what each task received
+        steps_output = {}
+        logging.info("Task execution results:")
+        for node_id, task in tasks.items():
+            output = "Task did not produce output."
+            if task.output:
+                output = task.output.raw
+            
+            steps_output[node_id] = {
+                "output": output,
+                "persona": node_map[node_id].get('persona'),
+                "role": node_map[node_id].get('role', '')
+            }
+            
+            if node_id == 'prompt':
+                logging.info(f"  {node_id}: {output}")
+            else:
+                # Log what context this task received
+                context_info = []
+                if task.context:
+                    for ctx in task.context:
+                        if ctx == prompt_task:
+                            context_info.append("original prompt")
+                        else:
+                            context_info.append(f"output from {ctx.agent.role}")
+                
+                context_str = f" (received: {', '.join(context_info)})" if context_info else " (no context)"
+                logging.info(f"  {node_id} ({task.agent.role}):{context_str}")
+                logging.info(f"    Output: {output[:100]}{'...' if len(output) > 100 else ''}")
+        
+        log_section("Final Result")
+        logging.info(final_output_text)
+        
+        return {
+            "final": final_output_text,
+            "steps": steps_output
         }
         
-        if node_id == 'prompt':
-            logging.info(f"  {node_id}: {output}")
-        else:
-            # Log what context this task received
-            context_info = []
-            if task.context:
-                for ctx in task.context:
-                    if ctx == prompt_task:
-                        context_info.append("original prompt")
-                    else:
-                        context_info.append(f"output from {ctx.agent.role}")
-            
-            context_str = f" (received: {', '.join(context_info)})" if context_info else " (no context)"
-            logging.info(f"  {node_id} ({task.agent.role}):{context_str}")
-            logging.info(f"    Output: {output[:100]}{'...' if len(output) > 100 else ''}")
-    
-    log_section("Final Result")
-    logging.info(final_output_text)
-    
-    return {
-        "final": final_output_text,
-        "steps": steps_output
-    }
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        logging.error(f"Error in execute_crew_graph: {str(e)}")
+        logging.error(f"Full traceback: {error_details}")
+        raise
 
 # API Routes
 
@@ -422,6 +435,8 @@ def run_crew_graph():
         user_prompt = data.get('user_prompt', '')
         user_api_key = data.get('user_api_key', '')
         
+        logging.info(f"Received request - Graph nodes: {len(graph_data.get('nodes', []))}, Prompt length: {len(user_prompt)}, API key provided: {bool(user_api_key)}")
+        
         if not graph_data:
             return jsonify({"error": "No graph data provided"}), 400
         
@@ -432,14 +447,27 @@ def run_crew_graph():
         import openai
         openai.api_key = user_api_key
         
+        logging.info("Starting crew execution...")
         result = execute_crew_graph(graph_data, user_prompt)
+        logging.info("Crew execution completed successfully")
         return jsonify(result)
         
     except ValueError as e:
+        logging.error(f"Validation error: {str(e)}")
         return jsonify({"error": str(e)}), 400
+    except ImportError as e:
+        logging.error(f"Import error: {str(e)}")
+        return jsonify({"error": f"Missing dependency: {str(e)}"}), 500
     except Exception as e:
-        logging.error(f"Error executing crew: {e}")
-        return jsonify({"error": "Failed to execute crew"}), 500
+        import traceback
+        error_details = traceback.format_exc()
+        logging.error(f"Error executing crew: {str(e)}")
+        logging.error(f"Full traceback: {error_details}")
+        return jsonify({
+            "error": "Failed to execute crew",
+            "details": str(e),
+            "type": type(e).__name__
+        }), 500
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -603,6 +631,67 @@ def validate_api_key():
         error_type = type(e).__name__
         logging.error(f"Error validating API key (type: {error_type})")
         return jsonify({"error": "Error validating API key"}), 500
+
+@app.route('/api/debug/test-crew', methods=['POST'])
+def test_crew():
+    """Test endpoint to verify CrewAI is working"""
+    try:
+        data = request.get_json()
+        user_api_key = data.get('user_api_key', '') if data else ''
+        
+        if not user_api_key:
+            return jsonify({"error": "API key is required"}), 400
+        
+        # Set the user's API key
+        import openai
+        openai.api_key = user_api_key
+        
+        # Test basic CrewAI functionality
+        from crewai import Agent, Task, Crew, Process
+        
+        # Create a simple test agent
+        test_agent = Agent(
+            role="Test Agent",
+            goal="Test that CrewAI is working",
+            backstory="A simple test agent to verify functionality",
+            verbose=True,
+            allow_delegation=False
+        )
+        
+        # Create a simple test task
+        test_task = Task(
+            description="Say 'Hello, CrewAI is working!'",
+            agent=test_agent,
+            expected_output="A simple greeting message"
+        )
+        
+        # Create and run a simple crew
+        crew = Crew(
+            agents=[test_agent],
+            tasks=[test_task],
+            process=Process.sequential,
+            verbose=True
+        )
+        
+        result = crew.kickoff()
+        
+        return jsonify({
+            "success": True,
+            "message": "CrewAI test completed successfully",
+            "output": str(result)
+        })
+        
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        logging.error(f"Test crew error: {str(e)}")
+        logging.error(f"Full traceback: {error_details}")
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "type": type(e).__name__,
+            "details": error_details
+        }), 500
 
 if __name__ == '__main__':
     # In single-container setup, always use port 5000 for internal communication
