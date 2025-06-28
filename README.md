@@ -22,6 +22,7 @@ A sophisticated AI agent workflow builder that allows you to create, save, and m
 
 The easiest way to run the application is using Docker Compose:
 
+#### Multi-Container Setup (Development/Production)
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
@@ -49,6 +50,24 @@ The easiest way to run the application is using Docker Compose:
    # Linux/Mac
    docker-compose down
    ```
+
+#### Single-Container Setup (Railway/Heroku)
+For deployment to Railway, Heroku, or other single-container platforms:
+
+1. **Test locally**
+   ```bash
+   docker-compose -f docker-compose.single.yml up --build
+   ```
+
+2. **Deploy to Railway**
+   - Connect your GitHub repository to Railway
+   - Railway will automatically detect the `railway.json` configuration
+   - The app will be available at your Railway URL
+
+3. **Access the application**
+   - Single URL serves both frontend and backend
+   - API endpoints available at `/api/*`
+   - Health check at `/health`
 
 ### Option 2: Manual Installation
 
@@ -203,6 +222,8 @@ npm test                        # Run React tests
 ## 🚀 Deployment
 
 ### Docker Deployment (Recommended)
+
+#### Multi-Container Setup
 The easiest way to deploy the application is using Docker Compose:
 
 1. **Build and run with Docker Compose**
@@ -218,6 +239,26 @@ The easiest way to deploy the application is using Docker Compose:
 3. **Access the application**
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:5000
+
+#### Single-Container Setup (Railway/Heroku)
+For deployment to Railway, Heroku, or other single-container platforms:
+
+1. **Deploy to Railway**
+   - Connect your GitHub repository to Railway
+   - Railway will automatically detect the `railway.json` configuration
+   - The app will be available at your Railway URL
+
+2. **Deploy to Heroku**
+   ```bash
+   heroku create your-app-name
+   heroku container:push web
+   heroku container:release web
+   ```
+
+3. **Access the application**
+   - Single URL serves both frontend and backend
+   - API endpoints available at `/api/*`
+   - Health check at `/health`
 
 ### Backend Deployment
 1. Set up a Python environment
