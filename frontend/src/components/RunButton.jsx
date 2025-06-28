@@ -26,6 +26,11 @@ const RunButton = ({ graphData, userPrompt, onResults }) => {
       return 'Please add at least one agent node to the graph';
     }
 
+    // Check if user has API key
+    if (!apiService.hasApiKey()) {
+      return 'API key is required. Please set your API key in Settings.';
+    }
+
     return null;
   };
 
@@ -44,7 +49,13 @@ const RunButton = ({ graphData, userPrompt, onResults }) => {
       onResults(results);
     } catch (err) {
       console.error('Error running crew:', err);
-      setError(err.response?.data?.error || err.message || 'Failed to run crew workflow');
+      
+      // Handle specific API key errors
+      if (err.message && err.message.includes('API key')) {
+        setError('API key is required. Please set your API key in Settings.');
+      } else {
+        setError(err.response?.data?.error || err.message || 'Failed to run crew workflow');
+      }
     } finally {
       setIsRunning(false);
     }
@@ -72,6 +83,16 @@ const RunButton = ({ graphData, userPrompt, onResults }) => {
       {error && (
         <div className="alert alert-danger mt-2">
           <strong>Error:</strong> {error}
+          {error.includes('API key') && (
+            <div className="mt-2">
+              <button 
+                className="btn btn-sm btn-outline-primary"
+                onClick={() => window.location.reload()}
+              >
+                Open Settings
+              </button>
+            </div>
+          )}
         </div>
       )}
 

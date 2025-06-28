@@ -4,12 +4,14 @@ import GraphCanvas from './components/GraphCanvas';
 import RunButton from './components/RunButton';
 import ResultsDisplay from './components/ResultsDisplay';
 import TabPanel from './components/TabPanel';
+import SettingsPanel from './components/SettingsPanel';
 
 function App() {
   const [selectedPersona, setSelectedPersona] = useState('');
   const [graphData, setGraphData] = useState({ nodes: [], edges: [] });
   const [userPrompt, setUserPrompt] = useState('');
   const [results, setResults] = useState(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handlePersonaSelect = useCallback((personaName) => {
     setSelectedPersona(personaName);
@@ -31,12 +33,28 @@ function App() {
     setGraphData(systemGraph);
   }, []);
 
+  const openSettings = () => setIsSettingsOpen(true);
+  const closeSettings = () => setIsSettingsOpen(false);
+
   return (
     <div className="App">
       <header className="app-header">
         <div className="container">
-          <h1>🧠 Cognitive Triage System</h1>
-          <p>Build AI agent workflows with drag-and-drop simplicity</p>
+          <div className="header-content">
+            <div className="header-left">
+              <h1>🧠 Cognitive Triage System</h1>
+              <p>Build AI agent workflows with drag-and-drop simplicity</p>
+            </div>
+            <div className="header-right">
+              <button 
+                className="settings-button"
+                onClick={openSettings}
+                title="Settings"
+              >
+                ⚙️ Settings
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -150,6 +168,9 @@ function App() {
           </div>
         </div>
       </main>
+
+      {/* Settings Panel */}
+      <SettingsPanel isOpen={isSettingsOpen} onClose={closeSettings} />
     </div>
   );
 }

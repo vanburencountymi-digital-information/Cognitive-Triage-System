@@ -420,9 +420,17 @@ def run_crew_graph():
         
         graph_data = data.get('graph', {})
         user_prompt = data.get('user_prompt', '')
+        user_api_key = data.get('user_api_key', '')
         
         if not graph_data:
             return jsonify({"error": "No graph data provided"}), 400
+        
+        if not user_api_key:
+            return jsonify({"error": "API key is required. Please set your API key in Settings."}), 400
+        
+        # Set the user's API key for this request
+        import openai
+        openai.api_key = user_api_key
         
         result = execute_crew_graph(graph_data, user_prompt)
         return jsonify(result)
@@ -555,6 +563,43 @@ def delete_system(name):
     except Exception as e:
         logging.error(f"Error deleting system: {e}")
         return jsonify({"error": "Failed to delete system"}), 500
+
+@app.route('/api/validate-api-key', methods=['POST'])
+def validate_api_key():
+    """Validate a user-provided API key"""
+    try:
+        data = request.get_json()
+        api_key = data.get('apiKey', '').strip()
+        
+        if not api_key:
+            return jsonify({"error": "API key is required"}), 400
+        
+        # Basic format validation
+        if not api_key.startswith('sk-'):
+            return jsonify({"error": "Invalid API key format. Should start with 'sk-'"}), 400
+        
+        # Test the API key with a simple OpenAI call
+        try:
+            import openai
+            openai.api_key = api_key
+            
+            # Make a simple test call to validate the key
+            response = openai.models.list()
+            
+            # If we get here, the key is valid
+            return jsonify({
+                "message": "API key is valid",
+                "valid": True
+            })
+            
+        except Exception as e:
+            # Log the error for debugging but don't expose details to user
+            logging.error(f"API key validation failed: {str(e)}")
+            return jsonify({"error": "Invalid API key. Please check your key and try again."}), 400
+            
+    except Exception as e:
+        logging.error(f"Error validating API key: {e}")
+        return jsonify({"error": "Error validating API key"}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

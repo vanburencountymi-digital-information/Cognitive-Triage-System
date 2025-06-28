@@ -20,14 +20,22 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Set environment variables to prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TERM=xterm
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    nginx \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 # Copy backend requirements and install
 COPY backend/requirements.txt .
+
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend code
@@ -39,9 +47,6 @@ RUN touch /app/backend/crew_run.log
 
 # Copy built frontend from build stage
 COPY --from=frontend-build /app/frontend/build /app/frontend/build
-
-# Install nginx for serving frontend
-RUN apt-get update && apt-get install -y nginx && rm -rf /var/lib/apt/lists/*
 
 # Copy nginx configuration
 COPY nginx.single.conf /etc/nginx/nginx.conf

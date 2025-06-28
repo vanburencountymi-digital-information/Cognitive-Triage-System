@@ -8,8 +8,27 @@ const api = axios.create({
   },
 });
 
+// Helper function to get user API key
+const getUserApiKey = () => {
+  return localStorage.getItem('userApiKey');
+};
+
+// Helper function to check if user has API key
+const hasUserApiKey = () => {
+  return !!getUserApiKey();
+};
+
 // API methods
 export const apiService = {
+  // API Key management
+  validateApiKey: async (apiKey) => {
+    const response = await api.post('/api/validate-api-key', { apiKey });
+    return response.data;
+  },
+
+  hasApiKey: hasUserApiKey,
+  getUserApiKey: getUserApiKey,
+
   // Health check
   healthCheck: async () => {
     const response = await api.get('/health');
@@ -45,9 +64,15 @@ export const apiService = {
 
   // Crew execution
   runCrewGraph: async (graphData, userPrompt) => {
+    const userApiKey = getUserApiKey();
+    if (!userApiKey) {
+      throw new Error('API key is required. Please set your API key in Settings.');
+    }
+
     const payload = {
       graph: graphData,
-      user_prompt: userPrompt
+      user_prompt: userPrompt,
+      user_api_key: userApiKey
     };
     const response = await api.post('/api/run-crew-graph', payload);
     return response.data;
@@ -84,6 +109,8 @@ export default api;
 
 // Individual exports for easier importing
 export const {
+  validateApiKey,
+  hasApiKey,
   healthCheck,
   getPersonas,
   createPersona,
