@@ -17,7 +17,7 @@ const CustomEdge = ({
   onEdgeUpdate,
   onEdgeDelete,
 }) => {
-  const [edgePath, labelX, labelY] = getBezierPath({
+  const [edgePath] = getBezierPath({
     sourceX,
     sourceY,
     sourcePosition,
