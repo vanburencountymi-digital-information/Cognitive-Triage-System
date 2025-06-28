@@ -8,6 +8,7 @@ The backend manages:
 - **Personas**: AI agent definitions with roles, goals, and tasks
 - **Crew Execution**: Dynamic creation and execution of AI agent workflows
 - **Graph-based Workflows**: Flexible agent collaboration patterns
+- **API Key Management**: User-provided OpenAI API key validation and usage
 
 ## Setup
 
@@ -16,12 +17,7 @@ The backend manages:
 pip install -r requirements.txt
 ```
 
-2. Set up environment variables (create `.env` file):
-```bash
-OPENAI_API_KEY=your_openai_api_key_here
-```
-
-3. Run the Flask server:
+2. Run the Flask server:
 ```bash
 # From backend directory
 python app.py
@@ -31,6 +27,31 @@ python backend/app.py
 ```
 
 The server will start on `http://localhost:5000`
+
+## API Key Management
+
+The backend now supports user-provided API keys for enhanced security and privacy:
+
+- **No Environment Variables**: Users provide their own OpenAI API keys
+- **Real-time Validation**: API keys are validated with OpenAI before use
+- **Secure Usage**: Keys are only used for workflow execution, never stored
+
+### API Key Validation Endpoint
+
+- **POST** `/api/validate-api-key`
+- Body:
+```json
+{
+  "apiKey": "sk-your-openai-api-key-here"
+}
+```
+- Returns:
+```json
+{
+  "message": "API key is valid",
+  "valid": true
+}
+```
 
 ## CORS Configuration
 
@@ -45,6 +66,11 @@ CORS(app)  # Enable CORS for all routes
 - **GET** `/health`
 - Returns server status
 - Response: `{"status": "healthy", "service": "Cognitive Triage System API"}`
+
+### API Key Management
+- **POST** `/api/validate-api-key`
+- Validates user-provided OpenAI API key
+- Returns validation status and message
 
 ### Special Nodes
 - **GET** `/api/special-nodes`
@@ -163,7 +189,8 @@ To load these examples, you can copy them to `systems.json` or use the API to sa
       }
     ]
   },
-  "user_prompt": "User input text"
+  "user_prompt": "User input text",
+  "user_api_key": "sk-your-openai-api-key-here"
 }
 ```
 
@@ -180,6 +207,8 @@ To load these examples, you can copy them to `systems.json` or use the API to sa
   }
 }
 ```
+
+**Note**: The `user_api_key` field is now required for all crew executions. The backend will use this key for all OpenAI API calls during the workflow execution.
 
 ## Graph Structure
 

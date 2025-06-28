@@ -10,6 +10,7 @@ A sophisticated AI agent workflow builder that allows you to create, save, and m
 - **Real-time Execution**: Run workflows and see results immediately
 - **Special Nodes**: Built-in nodes like "User Prompt" for enhanced workflows
 - **Example Systems**: Pre-built workflow templates to get started quickly
+- **API Key Management**: Secure user-specific API key management for OpenAI integration
 
 ## 🚀 Quick Start
 
@@ -17,6 +18,7 @@ A sophisticated AI agent workflow builder that allows you to create, save, and m
 - Python 3.8+
 - Node.js 14+
 - npm or yarn
+- **OpenAI API Key** (required for AI agent functionality)
 
 ### Option 1: Docker (Recommended)
 
@@ -42,7 +44,12 @@ The easiest way to run the application is using Docker Compose:
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:5000
 
-4. **Stop the services**
+4. **Set up your API key**
+   - Click the "⚙️ Settings" button in the header
+   - Enter your OpenAI API key and click "Validate"
+   - Save your API key for future use
+
+5. **Stop the services**
    ```bash
    # Windows
    stop_docker.bat
@@ -101,9 +108,37 @@ For deployment to Railway, Heroku, or other single-container platforms:
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:5000
 
+6. **Set up your API key**
+   - Click the "⚙️ Settings" button in the header
+   - Enter your OpenAI API key and click "Validate"
+   - Save your API key for future use
+
+## 🔑 API Key Setup
+
+### Getting Your OpenAI API Key
+
+1. **Visit OpenAI Platform**: Go to [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+2. **Sign in or create account**: Create an OpenAI account if you don't have one
+3. **Create API key**: Click "Create new secret key"
+4. **Copy the key**: The key starts with "sk-" followed by a long string
+5. **Set in app**: Paste the key in the Settings panel and click "Validate"
+
+### Security Features
+
+- **Local Storage**: Your API key is stored locally in your browser
+- **Never Shared**: The key is never stored on our servers
+- **Validation**: Keys are validated in real-time with OpenAI
+- **Privacy**: Only used for your own workflow executions
+
 ## 📖 Usage Guide
 
-### 1. System Management
+### 1. Initial Setup
+
+1. **Set API Key**: Click "⚙️ Settings" and enter your OpenAI API key
+2. **Load Examples** (optional): Load pre-built workflow templates
+3. **Create Personas**: Define AI agents with specific roles and goals
+
+### 2. System Management
 
 The System Manager (left sidebar) allows you to save and load complete workflow configurations:
 
@@ -125,7 +160,7 @@ The backend includes pre-built example systems:
 - **Full Quality Assurance**: Complete 4-agent workflow with all steps
 - **Direct Response**: Single agent for quick responses
 
-### 2. Building Workflows
+### 3. Building Workflows
 
 1. **Select a Persona**: Choose from the left panel or create a new one
 2. **Add Nodes**: Click "Add Node" to place agents in your workflow
@@ -135,7 +170,7 @@ The backend includes pre-built example systems:
 6. **Run Workflow**: Click "Run Crew Workflow" to execute your AI agents
 7. **View Results**: See the final output and individual step results on the right
 
-### 3. Special Nodes
+### 4. Special Nodes
 
 The system automatically provides special nodes:
 - **Prompt Node**: Represents user input that can be passed to any agent
@@ -150,6 +185,7 @@ The system automatically provides special nodes:
 - **CrewAI Integration**: Powers the AI agent workflows
 - **Data Persistence**: JSON-based storage for systems and personas
 - **Special Nodes**: Built-in support for system nodes like "prompt"
+- **API Key Management**: User-provided API key validation and usage
 
 ### Frontend (React)
 - **GraphCanvas**: Main workflow builder with drag-and-drop functionality
@@ -157,6 +193,7 @@ The system automatically provides special nodes:
 - **PersonaPanel**: Manage AI agent personas and configurations
 - **RunButton**: Execute workflows and handle results
 - **ResultsDisplay**: Show workflow execution results and intermediate outputs
+- **SettingsPanel**: Manage user API keys and preferences
 
 ## 📁 Project Structure
 
@@ -176,7 +213,8 @@ Cognitive-Triage-System/
 │   │   │   ├── SystemManager.jsx    # System save/load interface
 │   │   │   ├── PersonaPanel.jsx     # Persona management
 │   │   │   ├── RunButton.jsx        # Workflow execution
-│   │   │   └── ResultsDisplay.jsx   # Results viewer
+│   │   │   ├── ResultsDisplay.jsx   # Results viewer
+│   │   │   └── SettingsPanel.jsx    # API key management
 │   │   ├── api.js                   # API service layer
 │   │   └── App.jsx                  # Main application
 │   └── package.json                 # Node.js dependencies
@@ -184,6 +222,9 @@ Cognitive-Triage-System/
 ```
 
 ## 🔧 API Reference
+
+### API Key Management
+- `POST /api/validate-api-key` - Validate user-provided OpenAI API key
 
 ### System Management
 - `GET /api/systems` - List all saved systems
@@ -199,7 +240,7 @@ Cognitive-Triage-System/
 - `DELETE /api/personas/<name>` - Delete a persona
 
 ### Workflow Execution
-- `POST /api/run-crew-graph` - Execute a workflow with graph data and user prompt
+- `POST /api/run-crew-graph` - Execute a workflow with graph data, user prompt, and API key
 
 ### Special Nodes
 - `GET /api/special-nodes` - Get information about special nodes
@@ -286,11 +327,13 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ### Common Issues
 
-1. **Backend Connection Error**: Ensure the Flask backend is running on port 5000
-2. **CORS Issues**: The backend should have CORS enabled for localhost:3000
-3. **Node Dependencies**: Run `npm install` if you encounter module not found errors
-4. **Special Nodes Not Loading**: Check backend `/api/special-nodes` endpoint
-5. **System Loading Issues**: Verify the backend is running and systems.json exists
+1. **API Key Required**: Set your OpenAI API key in Settings (⚙️ button in header)
+2. **Invalid API Key**: Ensure your key starts with "sk-" and is valid
+3. **Backend Connection Error**: Ensure the Flask backend is running on port 5000
+4. **CORS Issues**: The backend should have CORS enabled for localhost:3000
+5. **Node Dependencies**: Run `npm install` if you encounter module not found errors
+6. **Special Nodes Not Loading**: Check backend `/api/special-nodes` endpoint
+7. **System Loading Issues**: Verify the backend is running and systems.json exists
 
 ### Debug Mode
 Enable React Developer Tools in your browser for component inspection and debugging.
