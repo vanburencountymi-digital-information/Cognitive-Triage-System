@@ -31,9 +31,13 @@ nginx
 # Wait a moment for nginx to start
 sleep 2
 
+# Initialize data files
+echo "Initializing data files..."
+cd /app
+python backend/init_data.py
+
 # Start the Flask backend in the background
 echo "Starting Flask backend on port 5000..."
-cd /app
 python app.py &
 BACKEND_PID=$!
 

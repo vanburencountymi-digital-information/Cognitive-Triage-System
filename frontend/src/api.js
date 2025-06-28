@@ -1,8 +1,9 @@
 import axios from 'axios';
 
 // Create axios instance with base configuration
+// Use relative URLs for production compatibility
 const api = axios.create({
-  baseURL: 'http://localhost:5000',
+  baseURL: process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000',
   headers: {
     'Content-Type': 'application/json',
   },
