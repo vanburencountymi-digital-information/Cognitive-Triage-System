@@ -809,3 +809,44 @@
     padding: 0.75rem 0;
   }
 }
+
+/* Debug Button Styles */
+.debug-button {
+  background-color: #ffc107;
+  color: #212529;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-right: 10px;
+  transition: background-color 0.2s;
+}
+
+.debug-button:hover {
+  background-color: #e0a800;
+}
+
+.debug-button:active {
+  background-color: #d39e00;
+}
+
+/* Alpha Notice Styles */
+.alpha-notice {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 5px;
+  border-left: 4px solid #ffc107;
+}
+
+.alpha-notice p {
+  margin: 0;
+  color: #856404;
+  font-size: 14px;
+}
+
+.alpha-notice strong {
+  color: #533f03;
+}

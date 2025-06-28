@@ -5,6 +5,7 @@ import RunButton from './components/RunButton';
 import ResultsDisplay from './components/ResultsDisplay';
 import TabPanel from './components/TabPanel';
 import SettingsPanel from './components/SettingsPanel';
+import DebugPanel from './components/DebugPanel';
 
 function App() {
   const [selectedPersona, setSelectedPersona] = useState('');
@@ -12,6 +13,7 @@ function App() {
   const [userPrompt, setUserPrompt] = useState('');
   const [results, setResults] = useState(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isDebugOpen, setIsDebugOpen] = useState(false);
 
   const handlePersonaSelect = useCallback((personaName) => {
     setSelectedPersona(personaName);
@@ -35,6 +37,8 @@ function App() {
 
   const openSettings = () => setIsSettingsOpen(true);
   const closeSettings = () => setIsSettingsOpen(false);
+  const openDebug = () => setIsDebugOpen(true);
+  const closeDebug = () => setIsDebugOpen(false);
 
   return (
     <div className="App">
@@ -46,6 +50,13 @@ function App() {
               <p>Build AI agent workflows with drag-and-drop simplicity</p>
             </div>
             <div className="header-right">
+              <button 
+                className="debug-button"
+                onClick={openDebug}
+                title="Debug Panel (Alpha)"
+              >
+                🔧 Debug
+              </button>
               <button 
                 className="settings-button"
                 onClick={openSettings}
@@ -161,6 +172,9 @@ function App() {
                       <li><strong>Run Workflow:</strong> Click "Run Crew Workflow" to execute your AI agents</li>
                       <li><strong>View Results:</strong> See the final output and individual step results on the right</li>
                     </ol>
+                    <div className="alpha-notice">
+                      <p><strong>🔧 Alpha Testing:</strong> If you encounter issues, use the Debug button in the header to run diagnostic tests and help identify problems.</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -171,6 +185,9 @@ function App() {
 
       {/* Settings Panel */}
       <SettingsPanel isOpen={isSettingsOpen} onClose={closeSettings} />
+      
+      {/* Debug Panel */}
+      <DebugPanel isOpen={isDebugOpen} onClose={closeDebug} />
     </div>
   );
 }

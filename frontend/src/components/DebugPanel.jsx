@@ -117,6 +117,36 @@ const DebugPanel = ({ isOpen, onClose }) => {
     setTestResults([]);
   };
 
+  const generateErrorReport = () => {
+    const report = {
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+      url: window.location.href,
+      testResults: testResults,
+      summary: {
+        total: testResults.length,
+        passed: testResults.filter(r => r.success).length,
+        failed: testResults.filter(r => !r.success).length,
+        failedTests: testResults.filter(r => !r.success).map(r => r.test)
+      }
+    };
+
+    return JSON.stringify(report, null, 2);
+  };
+
+  const copyErrorReport = async () => {
+    try {
+      const report = generateErrorReport();
+      await navigator.clipboard.writeText(report);
+      alert('Error report copied to clipboard! You can now paste it in an email or message.');
+    } catch (error) {
+      console.error('Failed to copy report:', error);
+      alert('Failed to copy report. Please manually copy the report below.');
+    }
+  };
+
+  const hasFailures = testResults.some(r => !r.success);
+
   if (!isOpen) return null;
 
   return (
@@ -150,6 +180,15 @@ const DebugPanel = ({ isOpen, onClose }) => {
               >
                 Clear Results
               </button>
+              {hasFailures && (
+                <button 
+                  onClick={copyErrorReport}
+                  className="btn btn-warning"
+                  title="Copy error report for support"
+                >
+                  📋 Copy Report
+                </button>
+              )}
             </div>
 
             <div className="test-results">
@@ -182,6 +221,25 @@ const DebugPanel = ({ isOpen, onClose }) => {
               )}
             </div>
 
+            {hasFailures && (
+              <div className="error-report-section">
+                <h4>📋 Error Report</h4>
+                <p>If you're experiencing issues, copy the error report below and send it to the developer:</p>
+                <div className="report-actions">
+                  <button 
+                    onClick={copyErrorReport}
+                    className="btn btn-warning"
+                  >
+                    📋 Copy Report to Clipboard
+                  </button>
+                </div>
+                <details className="report-details">
+                  <summary>View Full Error Report</summary>
+                  <pre className="error-report">{generateErrorReport()}</pre>
+                </details>
+              </div>
+            )}
+
             <div className="debug-info">
               <h4>Debug Information:</h4>
               <ul>
@@ -196,6 +254,19 @@ const DebugPanel = ({ isOpen, onClose }) => {
                 <strong>Note:</strong> If the Simple Crew Test fails, it indicates an issue with CrewAI 
                 or OpenAI integration. Check the details for specific error messages.
               </p>
+              
+              <div className="support-info">
+                <h5>Need Help?</h5>
+                <p>
+                  If you're experiencing issues:
+                </p>
+                <ol>
+                  <li>Run all tests using the "Run All Tests" button</li>
+                  <li>If any tests fail, click "Copy Report" to copy the error details</li>
+                  <li>Send the error report to the developer with a description of what you were trying to do</li>
+                  <li>Include any error messages you see in the browser console</li>
+                </ol>
+              </div>
             </div>
           </div>
         </div>
