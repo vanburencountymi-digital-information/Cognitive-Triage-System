@@ -51,9 +51,10 @@ COPY --from=frontend-build /app/frontend/build /app/frontend/build
 # Copy nginx configuration
 COPY nginx.single.conf /etc/nginx/nginx.conf
 
-# Create startup script
+# Create startup script and health check
 COPY start.sh /app/start.sh
-RUN chmod +x /app/start.sh
+COPY healthcheck.sh /app/healthcheck.sh
+RUN chmod +x /app/start.sh /app/healthcheck.sh
 
 # Expose port (Railway will set PORT environment variable)
 EXPOSE 8080
