@@ -129,7 +129,7 @@ const SettingsPanel = ({ isOpen, onClose }) => {
           <div className="setting-section">
             <h3>API Key Configuration</h3>
             <p className="setting-description">
-              Enter your OpenAI API key to use the AI agents. Your API key is encrypted and stored locally.
+              Enter your OpenAI API key to use the AI agents. Your API key is encrypted using military-grade AES-256-GCM encryption and stored locally in your browser.
             </p>
             
             <div className="api-key-input-group">
@@ -149,7 +149,7 @@ const SettingsPanel = ({ isOpen, onClose }) => {
                   disabled={isValidating || !apiKey.trim() || isLoading}
                   className="validate-button"
                 >
-                  {isValidating ? 'Validating...' : 'Validate'}
+                  {isValidating ? 'Validating...' : 'Validate & Store'}
                 </button>
               </div>
               
@@ -183,14 +183,29 @@ const SettingsPanel = ({ isOpen, onClose }) => {
                 <li>Sign in or create an account</li>
                 <li>Click "Create new secret key"</li>
                 <li>Copy the key (starts with "sk-")</li>
-                <li>Paste it above and click "Validate"</li>
+                <li>Paste it above and click "Validate & Store"</li>
               </ol>
+              
+              <div className="security-features">
+                <h4>🔒 Security Features:</h4>
+                <ul>
+                  <li><strong>AES-256-GCM Encryption:</strong> Military-grade encryption for your API key</li>
+                  <li><strong>Random Encryption Keys:</strong> Each encryption uses a unique, randomly generated key</li>
+                  <li><strong>Memory Protection:</strong> Decrypted key only exists in memory during API calls</li>
+                  <li><strong>No Server Storage:</strong> Your API key never leaves your device</li>
+                  <li><strong>Corruption Protection:</strong> Automatic cleanup of corrupted encrypted data</li>
+                </ul>
+              </div>
+              
               <p className="security-note">
-                🔒 Your API key is encrypted and stored locally in your browser using AES-256 encryption. 
+                🔒 Your API key is encrypted using AES-256-GCM encryption and stored locally in your browser. 
                 It is never sent to our servers except for validation and workflow execution.
                 <br />
                 <strong>Security Note:</strong> While encrypted, the key can still be accessed by scripts running on this page. 
                 Only use this on trusted devices and clear your API key when using shared computers.
+                <br />
+                <strong>Enhanced Security Available:</strong> For even stronger protection, consider using the enhanced security mode 
+                with passphrase-based encryption and session management.
               </p>
             </div>
           </div>
