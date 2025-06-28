@@ -12,6 +12,7 @@ A React-based frontend for building and managing AI agent workflows with drag-an
 - **Tabbed Interface**: Clean tab navigation between Personas and Systems management
 - **Real-time Execution**: Run workflows and see results immediately
 - **Special Nodes**: Built-in nodes like "User Prompt" for enhanced workflows
+- **Blank Nodes**: Create nodes without personas and assign them later
 - **Keyboard Support**: Full keyboard navigation and shortcuts
 
 ## 🎯 Interface Overview
@@ -38,7 +39,9 @@ The left sidebar features a clean tabbed interface for managing personas and sys
 The main workflow builder with interactive nodes and edges:
 
 **Node Management**
-- **Add Nodes**: Click "Add Node" to place agents in your workflow
+- **Add Nodes**: Click "Add Node" to place agents in your workflow (no persona selection required)
+- **Blank Nodes**: Create nodes without personas - they appear with a yellow border and "No persona selected" text
+- **Assign Personas**: Click any node to open context menu and select a persona from the dropdown
 - **Drag Nodes**: Move nodes around the canvas to organize your workflow
 - **Select Nodes**: Click any node to see its context menu
 - **Delete Nodes**: Use context menu or keyboard shortcuts
@@ -50,7 +53,7 @@ The main workflow builder with interactive nodes and edges:
 - **Delete Edges**: Use context menu, keyboard shortcuts, or control panel
 
 **Control Panel (Top-Left)**
-- **Add Node**: Add new agent nodes to the workflow
+- **Add Node**: Add new agent nodes to the workflow (creates blank nodes if no persona selected)
 - **Delete Node**: Remove selected node
 - **Delete Edge**: Remove selected edge
 - **Clear Agent Nodes**: Remove all agent nodes (keeps special nodes)
@@ -66,7 +69,8 @@ When you click on a node, a context menu appears next to it with:
 
 **For Custom Nodes (Agent Nodes):**
 - **Node Information**: Displays the current persona name and role
-- **Persona Dropdown**: Change the persona assigned to this node
+- **Node Status**: Shows whether the node is "Assigned" or "Unassigned"
+- **Persona Dropdown**: Change the persona assigned to this node (or assign one to blank nodes)
 - **Delete Button**: Remove the node from the workflow
 
 **For Special Nodes:**
@@ -121,8 +125,8 @@ To load examples, run the backend script: `python backend/load_examples.py`
 ## 📖 Usage Guide
 
 ### Building a Workflow
-1. **Select a Persona**: Choose from the Personas tab or create a new one
-2. **Add Nodes**: Click "Add Node" to place agents in your workflow
+1. **Add Nodes**: Click "Add Node" to place agents in your workflow (creates blank nodes if no persona selected)
+2. **Assign Personas**: Click nodes to open context menu and select personas from the dropdown
 3. **Connect Nodes**: Drag from one node's bottom handle to another's top handle
 4. **Edit Connections**: Click edges to modify source/target nodes via dropdowns
 5. **Configure Nodes**: Click nodes to change personas via dropdown
@@ -130,14 +134,40 @@ To load examples, run the backend script: `python backend/load_examples.py`
 
 ### Running a Workflow
 1. **Enter Prompt**: Type your question or request in the prompt field
-2. **Run Workflow**: Click "Run Crew Workflow" to execute your AI agents
-3. **View Results**: See the final output and individual step results on the right
+2. **Validate Workflow**: The system will check that all nodes have personas assigned
+3. **Run Workflow**: Click "Run Crew Workflow" to execute your AI agents
+4. **View Results**: See the final output and individual step results on the right
 
 ### Managing Elements
 - **Select Items**: Click any node or edge to select it
 - **Delete Items**: Use context menu delete buttons or press `Delete` key
 - **Edit Properties**: Use context menu dropdowns to modify settings
 - **Close Menus**: Click elsewhere or press `Escape`
+
+### Blank Nodes and Validation
+
+The system supports creating nodes without personas assigned, providing flexibility in workflow design:
+
+**Creating Blank Nodes**
+- Click "Add Node" without selecting a persona first
+- Blank nodes appear with a yellow border and "No persona selected" text
+- They are visually distinct from assigned nodes for easy identification
+
+**Assigning Personas to Blank Nodes**
+- Click any blank node to open its context menu
+- Use the persona dropdown to select an appropriate persona
+- The node will immediately update to show the assigned persona
+
+**Workflow Validation**
+- Before running a workflow, the system validates that all nodes have personas assigned
+- If any blank nodes are found, execution is blocked with a clear error message
+- The error message lists the specific nodes that need personas assigned
+- This prevents incomplete workflows from being executed
+
+**Visual Indicators**
+- **Assigned Nodes**: Blue border with persona name displayed
+- **Blank Nodes**: Yellow border with "No persona selected" in italic text
+- **Context Menu Status**: Shows "Assigned" or "Unassigned" status
 
 ## 🏗️ Components Architecture
 

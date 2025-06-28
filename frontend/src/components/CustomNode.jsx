@@ -2,8 +2,10 @@ import React from 'react';
 import { Handle, Position } from 'reactflow';
 
 const CustomNode = ({ data, isConnectable }) => {
+  const hasPersona = data.persona && data.persona.trim() !== '';
+  
   return (
-    <div className="custom-node">
+    <div className={`custom-node ${!hasPersona ? 'blank-node' : ''}`}>
       <Handle
         type="target"
         position={Position.Top}
@@ -16,7 +18,11 @@ const CustomNode = ({ data, isConnectable }) => {
         </div>
         <div className="node-body">
           <div className="persona-display">
-            <strong>{data.persona || 'No persona selected'}</strong>
+            {hasPersona ? (
+              <strong>{data.persona}</strong>
+            ) : (
+              <strong className="blank-persona">No persona selected</strong>
+            )}
           </div>
         </div>
       </div>

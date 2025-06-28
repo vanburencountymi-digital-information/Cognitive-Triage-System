@@ -22,13 +22,23 @@ const ContextMenu = ({
   console.log('ContextMenu: Rendering menu at position:', position);
 
   const getNodeDisplayName = (node) => {
-    if (node.data?.persona) {
+    if (node.data?.persona && node.data.persona.trim() !== '') {
       return node.data.persona;
     }
     if (node.data?.type) {
       return node.data.type;
     }
     return node.id;
+  };
+
+  const getNodeStatus = (node) => {
+    if (node.type === 'special') {
+      return 'Special Node';
+    }
+    if (node.data?.persona && node.data.persona.trim() !== '') {
+      return 'Assigned';
+    }
+    return 'Unassigned';
   };
 
   return (
@@ -54,6 +64,9 @@ const ContextMenu = ({
               </div>
               <div className="context-item-value">
                 {getNodeDisplayName(selectedNode)}
+              </div>
+              <div className="context-item-status">
+                <small className="text-muted">Status: {getNodeStatus(selectedNode)}</small>
               </div>
               
               {selectedNode.type === 'custom' && (

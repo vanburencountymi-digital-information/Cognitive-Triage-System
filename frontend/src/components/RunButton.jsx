@@ -18,7 +18,8 @@ const RunButton = ({ graphData, userPrompt, onResults }) => {
     const agentNodes = graphData.nodes.filter(node => !node.type || node.type === 'custom');
     const nodesWithoutPersonas = agentNodes.filter(node => !node.persona || node.persona.trim() === '');
     if (nodesWithoutPersonas.length > 0) {
-      return 'All agent nodes must have personas assigned';
+      const nodeIds = nodesWithoutPersonas.map(node => node.id).join(', ');
+      return `Cannot run workflow: ${nodesWithoutPersonas.length} node(s) without personas assigned (${nodeIds}). Please assign personas to all nodes before running.`;
     }
 
     // Check if there's at least one agent node
