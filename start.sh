@@ -25,14 +25,14 @@ check_service() {
 }
 
 # Start nginx in the background
-echo "Starting nginx..."
+echo "Starting nginx on port 8080..."
 nginx
 
 # Wait a moment for nginx to start
 sleep 2
 
 # Start the Flask backend in the background
-echo "Starting Flask backend..."
+echo "Starting Flask backend on port 5000..."
 cd /app
 python app.py &
 BACKEND_PID=$!
@@ -40,6 +40,8 @@ BACKEND_PID=$!
 # Wait for backend to be ready
 if check_service "Flask backend" 5000; then
     echo "All services started successfully!"
+    echo "Nginx listening on port 8080 (external)"
+    echo "Flask backend listening on port 5000 (internal)"
     
     # Wait for the backend process
     wait $BACKEND_PID

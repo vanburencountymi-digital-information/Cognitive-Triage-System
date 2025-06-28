@@ -602,5 +602,7 @@ def validate_api_key():
         return jsonify({"error": "Error validating API key"}), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    # In single-container setup, always use port 5000 for internal communication
+    # The PORT environment variable is used by nginx for external access
+    port = 5000
     app.run(debug=True, host='0.0.0.0', port=port) 
