@@ -162,9 +162,25 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
+.custom-node.blank-node {
+  border-color: #ffc107;
+  background: #fffbf0;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+}
+
 .custom-node.selected {
   border-color: #28a745;
   box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
+}
+
+.custom-node.blank-node.selected {
+  border-color: #ffc107;
+  box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.3);
+}
+
+.blank-persona {
+  color: #856404 !important;
+  font-style: italic;
 }
 
 /* Special node styles */
@@ -1017,18 +1033,17 @@
 }
 
 .context-item-value {
-  margin-bottom: 0.75rem;
-  padding: 0.5rem;
-  background: #f8f9fa;
-  border-radius: 4px;
   font-size: 0.9rem;
-  font-weight: 500;
   color: #333;
-  word-break: break-word;
+  margin-bottom: 0.5rem;
+}
+
+.context-item-status {
+  margin-bottom: 0.5rem;
 }
 
 .context-item-actions {
-  margin-top: 0.75rem;
+  margin-top: 0.5rem;
 }
 
 .context-item-actions .form-group {

@@ -9,6 +9,7 @@ The backend manages:
 - **Crew Execution**: Dynamic creation and execution of AI agent workflows
 - **Graph-based Workflows**: Flexible agent collaboration patterns
 - **API Key Management**: User-provided OpenAI API key validation and usage
+- **Workflow Validation**: Ensures all nodes have personas assigned before execution
 
 ## Setup
 
@@ -217,6 +218,30 @@ The graph defines how agents work together:
 - **Nodes**: Each node represents an agent/task with a specific persona
 - **Edges**: Define dependencies between tasks (source → target)
 - **Execution**: Tasks are executed sequentially based on dependencies
+- **Validation**: All nodes must have personas assigned before execution
+
+### Node Requirements
+
+Each node in the graph must have:
+- **id**: Unique identifier for the node
+- **persona**: Name of the persona to use (cannot be empty or blank)
+- **role**: Optional role description
+
+### Blank Node Validation
+
+The backend validates that all nodes have personas assigned before executing workflows:
+
+- **Pre-execution Check**: Before creating agents and tasks, the system checks all nodes
+- **Blank Node Detection**: Nodes with empty or missing personas are identified
+- **Clear Error Messages**: If blank nodes are found, execution is blocked with a detailed error
+- **Node Listing**: The error message includes the specific node IDs that need personas assigned
+
+Example validation error:
+```json
+{
+  "error": "Cannot run workflow: 2 node(s) without personas assigned (node1, node2). Please assign personas to all nodes before running."
+}
+```
 
 ### Special Prompt Node
 
@@ -349,7 +374,7 @@ This gives the oracle direct access to the user's original prompt without any pr
 
 The API returns appropriate HTTP status codes:
 - `200`: Success
-- `400`: Bad Request (missing data, invalid format, no valid personas found)
+- `400`: Bad Request (missing data, invalid format, no valid personas found, blank nodes detected)
 - `404`: Not Found (persona not found)
 - `409`: Conflict (persona already exists)
 - `500`: Internal Server Error
@@ -358,6 +383,7 @@ Common error scenarios:
 - **No valid personas found**: Ensure persona names match exactly (case-sensitive)
 - **Missing graph data**: Provide both `graph` and `user_prompt` in request body
 - **Invalid edges**: Ensure source and target node IDs exist in the graph
+- **Blank nodes detected**: All nodes must have personas assigned before execution
 
 ## Logging
 
@@ -370,8 +396,9 @@ For frontend developers:
 1. **Start with the health check** to verify backend connectivity
 2. **Load available personas** using GET `/api/personas` for UI components
 3. **Implement graph building** - allow users to create nodes and edges
-4. **Handle async execution** - crew runs can take 30-60 seconds
-5. **Display step-by-step results** - show both final output and individual step outputs
+4. **Handle blank nodes** - support creating nodes without personas and validation
+5. **Handle async execution** - crew runs can take 30-60 seconds
+6. **Display step-by-step results** - show both final output and individual step outputs
 
 ## File Structure
 
@@ -381,8 +408,9 @@ backend/
 ├── requirements.txt    # Python dependencies
 ├── personas.json       # Persona definitions
 ├── test_backend.py     # Full API test suite
+├── test_blank_nodes.py # Blank nodes validation test
 ├── simple_test.py      # Basic functionality test
 ├── api_examples.md     # Curl/PowerShell examples
 ├── crew_run.log        # Execution logs
 └── BACKEND_README.md   # This file
-``` 
+```

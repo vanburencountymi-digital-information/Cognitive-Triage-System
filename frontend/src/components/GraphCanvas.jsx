@@ -355,11 +355,6 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
   }, [selectedEdge, selectedNode, onEdgeDelete, setNodes, setEdges]);
 
   const addNode = useCallback(() => {
-    if (!selectedPersona) {
-      alert('Please select a persona first');
-      return;
-    }
-
     // Calculate center position of current viewport
     let centerPosition = { x: 100, y: 100 }; // fallback position
     
@@ -388,7 +383,7 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
       type: 'custom',
       position: centerPosition,
       data: {
-        persona: selectedPersona,
+        persona: selectedPersona || '', // Allow empty persona for blank nodes
         role: 'Agent',
         onPersonaChange: (newPersona) => {
           setNodes((nds) =>
@@ -492,8 +487,7 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
             <button 
               className="btn btn-primary"
               onClick={addNode}
-              disabled={!selectedPersona}
-              title={!selectedPersona ? "Select a persona first" : "Add new node"}
+              title="Add new node (can be blank or with selected persona)"
             >
               Add Node
             </button>

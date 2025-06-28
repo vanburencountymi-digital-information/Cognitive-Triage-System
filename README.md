@@ -9,6 +9,7 @@ A sophisticated AI agent workflow builder that allows you to create, save, and m
 - **Persona Management**: Create, edit, and manage AI agent personas
 - **Real-time Execution**: Run workflows and see results immediately
 - **Special Nodes**: Built-in nodes like "User Prompt" for enhanced workflows
+- **Blank Nodes**: Create nodes without personas and assign them later with validation
 - **Example Systems**: Pre-built workflow templates to get started quickly
 - **🔐 Enhanced API Key Security**: Military-grade encryption with passphrase protection and session management
 

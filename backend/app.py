@@ -166,12 +166,18 @@ def execute_crew_graph(graph_data, user_prompt):
         logging.info("Created special 'prompt' node")
         
         # First pass: create all agents and tasks
+        blank_nodes = []
         for node in nodes:
             node_id = node.get('id')
             persona_name = node.get('persona')
             
-            if not node_id or not persona_name:
-                logging.warning(f"Skipping node with missing id or persona: {node}")
+            if not node_id:
+                logging.warning(f"Skipping node with missing id: {node}")
+                continue
+                
+            if not persona_name or persona_name.strip() == '':
+                blank_nodes.append(node_id)
+                logging.warning(f"Node '{node_id}' has no persona assigned")
                 continue
                 
             persona = find_persona_by_name(persona_name)
@@ -188,6 +194,11 @@ def execute_crew_graph(graph_data, user_prompt):
             except Exception as e:
                 logging.error(f"Failed to create task for node '{node_id}' with persona '{persona_name}': {str(e)}")
                 continue
+        
+        # Check for blank nodes and provide clear error message
+        if blank_nodes:
+            blank_nodes_str = ', '.join(blank_nodes)
+            raise ValueError(f"Cannot run workflow: {len(blank_nodes)} node(s) without personas assigned ({blank_nodes_str}). Please assign personas to all nodes before running.")
         
         # Validate that we have at least one task (excluding prompt)
         if len(tasks) <= 1:  # Only prompt task exists
