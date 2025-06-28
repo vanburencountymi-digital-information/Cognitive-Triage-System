@@ -427,3 +427,17 @@ For issues and questions:
 2. Review the security documentation in `SECURITY_COMPARISON.md`
 3. Review the API documentation
 4. Open an issue on GitHub
+
+## 🐞 Development Troubleshooting Note
+
+If you are using the two-container Docker Compose setup for development and do not see any personas or systems in the frontend:
+
+- Ensure that `backend/personas.json` and `backend/systems.json` exist and are populated with data. You can (re-)initialize them by running:
+  ```bash
+  python backend/init_data.py
+  ```
+- The backend may take a few seconds to start up. If API endpoints return 404 or empty results immediately after starting, wait a moment and try again.
+- If you still have issues, check the backend container logs for errors:
+  ```bash
+  docker logs cognitive-triage-system-backend-1
+  ```

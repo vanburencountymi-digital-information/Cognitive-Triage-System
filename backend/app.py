@@ -25,8 +25,8 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
 # Configuration
-PERSONAS_FILE = "backend/personas.json"
-SYSTEMS_FILE = "backend/systems.json"
+PERSONAS_FILE = "personas.json"
+SYSTEMS_FILE = "systems.json"
 
 def log_section(title: str):
     logging.info("\n" + "#" * 60)
