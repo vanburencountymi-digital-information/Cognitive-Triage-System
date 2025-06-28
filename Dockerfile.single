@@ -45,6 +45,11 @@ COPY backend/ .
 RUN mkdir -p /app/backend
 RUN touch /app/backend/crew_run.log
 
+# Ensure data files are in the correct location
+RUN if [ -f "personas.json" ]; then cp personas.json backend/personas.json; fi
+RUN if [ -f "systems.json" ]; then cp systems.json backend/systems.json; fi
+RUN if [ -f "example_systems.json" ]; then cp example_systems.json backend/example_systems.json; fi
+
 # Copy built frontend from build stage
 COPY --from=frontend-build /app/frontend/build /app/frontend/build
 

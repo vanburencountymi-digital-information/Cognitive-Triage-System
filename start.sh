@@ -31,10 +31,25 @@ nginx
 # Wait a moment for nginx to start
 sleep 2
 
+# Debug: Show what files exist
+echo "=== Debug: Checking files ==="
+echo "Current directory: $(pwd)"
+echo "Files in current directory:"
+ls -la
+echo "Files in backend directory:"
+ls -la backend/ || echo "backend directory not found"
+echo "=== End Debug ==="
+
 # Initialize data files
 echo "Initializing data files..."
 cd /app
 python backend/init_data.py
+
+# Debug: Show what files exist after initialization
+echo "=== Debug: After initialization ==="
+echo "Files in backend directory:"
+ls -la backend/
+echo "=== End Debug ==="
 
 # Start the Flask backend in the background
 echo "Starting Flask backend on port 5000..."
