@@ -18,7 +18,39 @@ A sophisticated AI agent workflow builder that allows you to create, save, and m
 - Node.js 14+
 - npm or yarn
 
-### Installation
+### Option 1: Docker (Recommended)
+
+The easiest way to run the application is using Docker Compose:
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd Cognitive-Triage-System
+   ```
+
+2. **Start with Docker Compose**
+   ```bash
+   # Windows
+   start_docker.bat
+   
+   # Linux/Mac
+   docker-compose up --build
+   ```
+
+3. **Open your browser**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:5000
+
+4. **Stop the services**
+   ```bash
+   # Windows
+   stop_docker.bat
+   
+   # Linux/Mac
+   docker-compose down
+   ```
+
+### Option 2: Manual Installation
 
 1. **Clone the repository**
    ```bash
@@ -169,6 +201,23 @@ npm test                        # Run React tests
 ```
 
 ## 🚀 Deployment
+
+### Docker Deployment (Recommended)
+The easiest way to deploy the application is using Docker Compose:
+
+1. **Build and run with Docker Compose**
+   ```bash
+   docker-compose up --build -d
+   ```
+
+2. **For production, use the production compose file**
+   ```bash
+   docker-compose -f docker-compose.prod.yml up --build -d
+   ```
+
+3. **Access the application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:5000
 
 ### Backend Deployment
 1. Set up a Python environment
