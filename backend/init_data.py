@@ -12,9 +12,9 @@ def init_data_files():
     """Initialize data files if they don't exist"""
     
     # Define file paths (relative to /app in container)
-    personas_file = "backend/personas.json"
-    systems_file = "backend/systems.json"
-    example_systems_file = "backend/example_systems.json"
+    personas_file = "personas.json"
+    systems_file = "systems.json"
+    example_systems_file = "example_systems.json"
     
     print(f"Current working directory: {os.getcwd()}")
     print(f"Checking for personas file: {personas_file}")
