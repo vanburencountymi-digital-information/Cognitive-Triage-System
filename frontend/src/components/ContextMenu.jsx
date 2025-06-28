@@ -7,7 +7,10 @@ const ContextMenu = ({
   onPersonaChange, 
   onDeleteNode, 
   onDeleteEdge,
-  availablePersonas = []
+  onEdgeSourceChange,
+  onEdgeTargetChange,
+  availablePersonas = [],
+  availableNodes = []
 }) => {
   console.log('ContextMenu render:', { selectedNode, selectedEdge, position });
   
@@ -26,12 +29,6 @@ const ContextMenu = ({
       return node.data.type;
     }
     return node.id;
-  };
-
-  const getEdgeDisplayName = (edge) => {
-    const sourceName = edge.source;
-    const targetName = edge.target;
-    return `${sourceName} → ${targetName}`;
   };
 
   return (
@@ -109,11 +106,38 @@ const ContextMenu = ({
               <div className="context-item-header">
                 <strong>Selected Edge:</strong>
               </div>
-              <div className="context-item-value">
-                {getEdgeDisplayName(selectedEdge)}
-              </div>
               
               <div className="context-item-actions">
+                <div className="form-group">
+                  <label>Source Node:</label>
+                  <select
+                    className="form-select form-select-sm"
+                    value={selectedEdge.source}
+                    onChange={(e) => onEdgeSourceChange?.(selectedEdge.id, e.target.value)}
+                  >
+                    {availableNodes.map((node) => (
+                      <option key={node.id} value={node.id}>
+                        {getNodeDisplayName(node)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="form-group">
+                  <label>Target Node:</label>
+                  <select
+                    className="form-select form-select-sm"
+                    value={selectedEdge.target}
+                    onChange={(e) => onEdgeTargetChange?.(selectedEdge.id, e.target.value)}
+                  >
+                    {availableNodes.map((node) => (
+                      <option key={node.id} value={node.id}>
+                        {getNodeDisplayName(node)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
                 <button
                   className="btn btn-danger btn-sm w-100"
                   onClick={() => onDeleteEdge?.(selectedEdge.id)}

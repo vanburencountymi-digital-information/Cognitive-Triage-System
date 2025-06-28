@@ -283,6 +283,54 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
     onEdgeDelete(edgeId);
   }, [onEdgeDelete]);
 
+  // Handle edge source change from context menu
+  const handleEdgeSourceChange = useCallback((edgeId, newSource) => {
+    setEdges((eds) => {
+      const updated = eds.map((edge) => {
+        if (edge.id === edgeId) {
+          return {
+            ...edge,
+            source: newSource,
+            data: {
+              source: newSource,
+              target: edge.target,
+              availableNodes: nodes,
+            },
+          };
+        }
+        return edge;
+      });
+      // Also update selectedEdge in state
+      const updatedEdge = updated.find(e => e.id === edgeId);
+      if (updatedEdge) setSelectedEdge(updatedEdge);
+      return updated;
+    });
+  }, [setEdges, nodes]);
+
+  // Handle edge target change from context menu
+  const handleEdgeTargetChange = useCallback((edgeId, newTarget) => {
+    setEdges((eds) => {
+      const updated = eds.map((edge) => {
+        if (edge.id === edgeId) {
+          return {
+            ...edge,
+            target: newTarget,
+            data: {
+              source: edge.source,
+              target: newTarget,
+              availableNodes: nodes,
+            },
+          };
+        }
+        return edge;
+      });
+      // Also update selectedEdge in state
+      const updatedEdge = updated.find(e => e.id === edgeId);
+      if (updatedEdge) setSelectedEdge(updatedEdge);
+      return updated;
+    });
+  }, [setEdges, nodes]);
+
   // Keyboard delete functionality
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -485,7 +533,17 @@ const GraphCanvas = ({ onGraphChange, selectedPersona, graphData }) => {
         onPersonaChange={handlePersonaChange}
         onDeleteNode={handleDeleteNode}
         onDeleteEdge={handleDeleteEdge}
+        onEdgeSourceChange={handleEdgeSourceChange}
+        onEdgeTargetChange={handleEdgeTargetChange}
         availablePersonas={availablePersonas}
+        availableNodes={(() => {
+          const filteredNodes = nodes.filter((node, index, self) => 
+            // Remove duplicates based on id
+            index === self.findIndex(n => n.id === node.id)
+          );
+          console.log('Available nodes for dropdown:', filteredNodes.map(n => ({ id: n.id, type: n.type, persona: n.data?.persona })));
+          return filteredNodes;
+        })()}
       />
     </div>
   );
