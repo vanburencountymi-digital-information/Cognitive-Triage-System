@@ -174,6 +174,11 @@ def execute_crew_graph(graph_data, user_prompt):
             if not node_id:
                 logging.warning(f"Skipping node with missing id: {node}")
                 continue
+            
+            # Skip the special "prompt" node as it's created programmatically
+            if node_id == 'prompt':
+                logging.info(f"Skipping special 'prompt' node from graph data - using programmatically created one")
+                continue
                 
             if not persona_name or persona_name.strip() == '':
                 blank_nodes.append(node_id)
